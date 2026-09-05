@@ -1,0 +1,27 @@
+# ============================================
+#  KONFIGURASI RYDZZ SHELL (~/.rydzzrc)
+#  Simpan file ini di ~/.rydzz_home/.rydzzrc
+#  Setiap baris = 1 direktif. Baris '#' diabaikan.
+# ============================================
+
+# Warna prompt: green, purple, cyan, yellow, blue, magenta, red, white
+# prompt color=green
+
+# Tampilkan banner saat startup (true/false)
+# banner=true
+
+# Sertakan hidden files di 'ls' secara default (true/false)
+# hidden=false
+
+# Aktifkan auto-cd (ketik nama folder langsung pindah) (true/false)
+# auto_cd=true
+
+# Definisikan alias khusus Rydzz: alias=<nama>=<perintah>
+# alias=cl=clear
+# alias=ll=ls -la
+
+# Tambah file ke daftar terproteksi: protected=add:file1,file2
+# protected=add:rahasia.txt
+
+# Jalankan command otomatis saat startup shell
+# init=clear
