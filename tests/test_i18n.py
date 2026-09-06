@@ -59,9 +59,17 @@ def test_missing_key_falls_back_to_id(monkeypatch):
     assert out  # tidak memunculkan placeholder raw
 
 
-def test_list_languages():
+def test_list_languages(monkeypatch):
+    # saat UI bahasa Indonesia
+    monkeypatch.setattr(i18n, "_current", "id")
     langs = i18n.list_languages()
     assert ("id", "Bahasa Indonesia") in langs
+    assert ("en", "Bahasa Inggris") in langs
+
+    # saat UI bahasa Inggris
+    monkeypatch.setattr(i18n, "_current", "en")
+    langs = i18n.list_languages()
+    assert ("id", "Indonesian") in langs
     assert ("en", "English") in langs
 
 

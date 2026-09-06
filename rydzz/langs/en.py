@@ -225,6 +225,8 @@ STRINGS = {
 
     # ---------- lang command ----------
     "lang.current": "Active language: {name} ({code})",
+    "lang.names.id": "Indonesian",
+    "lang.names.en": "English",
     "lang.usage_help": "Usage: lang list | lang -C <code> | lang set <code>",
     "lang.usage_hint": """  lang list         - list available languages
   lang -C <code>    - change language (or no arg = pick manually)

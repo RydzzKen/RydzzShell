@@ -70,12 +70,20 @@ def get_language():
 
 
 def language_name(code=None):
+    """Nama bahasa sesuai bahasa yang sedang aktif.
+
+    Saat UI berbahasa Indonesia, 'en' disebut 'Bahasa Inggris'; saat UI
+    berbahasa Inggris, 'id' disebut 'Indonesian'.
+    """
     code = code or _current
+    name = t(f"lang.names.{code}")
+    if name and not name.startswith("lang.names."):
+        return name
     return LANGUAGES.get(code, code)
 
 
 def list_languages():
-    return [(code, name) for code, name in LANGUAGES.items()]
+    return [(code, language_name(code)) for code in LANGUAGES]
 
 
 def is_available(code):
