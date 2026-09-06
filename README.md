@@ -61,11 +61,35 @@ dl list -n 5            5 unduhan terbaru
 dl list -s              Urutkan dari ukuran terbesar
 dl update               Update yt-dlp
 ```
-- Ditenagai `yt-dlp`, otomatis dikelompokkan per platform:
-  **YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, Twitch,
-  Bilibili, SoundCloud, Dailymotion, Vimeo, Pinterest, Rumble, Odysee,
-  Likee, Snapchat, Telegram, Discord, Spotify, TwitCasting**, lainnya →
-  `Lainnya/`
+- Ditenagai `yt-dlp`, otomatis dikelompokkan per platform (logo brand dari
+  Simple Icons):
+
+| Platform | Domain | Konten |
+| --- | --- | --- |
+| <img src="https://cdn.simpleicons.org/youtube/FF0000" width="16" /> **YouTube** | `youtube.com`, `youtu.be`, `music.youtube.com` | Video / Playlist (MP3 via `-q`) |
+| <img src="https://cdn.simpleicons.org/instagram/E4405F" width="16" /> **Instagram** | `instagram.com` | Reels / Stories / Foto |
+| <img src="https://cdn.simpleicons.org/tiktok/000000" width="16" /> **TikTok** | `tiktok.com`, `vt.tiktok.com` | Video |
+| <img src="https://cdn.simpleicons.org/x/000000" width="16" /> **X (Twitter)** | `x.com`, `twitter.com` | Video / GIF |
+| <img src="https://cdn.simpleicons.org/facebook/1877F2" width="16" /> **Facebook** | `facebook.com`, `fb.watch` | Reels / Video |
+| <img src="https://cdn.simpleicons.org/spotify/1DB954" width="16" /> **Spotify** | `open.spotify.com`, `spotify.com` | Track / Album / Playlist (MP3 via spotdl) |
+| <img src="https://cdn.simpleicons.org/reddit/FF4500" width="16" /> **Reddit** | `reddit.com`, `redd.it` | Video |
+| <img src="https://cdn.simpleicons.org/twitch/9146FF" width="16" /> **Twitch** | `twitch.tv` | Clip / VOD |
+| <img src="https://cdn.simpleicons.org/bilibili/00A1D6" width="16" /> **Bilibili** | `bilibili.com`, `b23.tv` | Video / Audio |
+| <img src="https://cdn.simpleicons.org/soundcloud/FF3300" width="16" /> **SoundCloud** | `soundcloud.com` | Audio / MP3 |
+| <img src="https://cdn.simpleicons.org/dailymotion/0066DC" width="16" /> **Dailymotion** | `dailymotion.com` | Video |
+| <img src="https://cdn.simpleicons.org/vimeo/1AB7EA" width="16" /> **Vimeo** | `vimeo.com` | Video |
+| <img src="https://cdn.simpleicons.org/pinterest/E60023" width="16" /> **Pinterest** | `*pinterest*`, `pinterest.com` | Video / Gambar |
+| <img src="https://cdn.simpleicons.org/rumble/85C742" width="16" /> **Rumble** | `rumble.com` | Video |
+| <img src="https://cdn.simpleicons.org/odysee/EF1970" width="16" /> **Odysee** | `odysee.com` | Video |
+| **Likee** | `likee.com` | Video |
+| <img src="https://cdn.simpleicons.org/snapchat/FFFC00" width="16" /> **Snapchat** | `snapchat.com` | Video |
+| <img src="https://cdn.simpleicons.org/telegram/26A5E4" width="16" /> **Telegram** | `t.me`, `telegram.app` | Video |
+| <img src="https://cdn.simpleicons.org/discord/5865F2" width="16" /> **Discord** | `discord` (termasuk `cdn.discordapp.com`) | Clip |
+| **TwitCasting** | `twitcasting.tv` | Live / VOD |
+| **Lainnya** | URL lain | Folder `Lainnya/` |
+
+  > **Likee** & **TwitCasting** tampil tanpa logo — ikonnya belum tersedia
+  > di Simple Icons. Sumber logo: `cdn.simpleicons.org`.
 - Progress bar realtime (persen, kecepatan, ETA)
 - **Playlist/batch**: playlist ikut terunduh (tanpa `--no-playlist`) dan bisa
   unduh banyak URL sekaligus dalam satu perintah
