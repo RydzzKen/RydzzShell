@@ -3,6 +3,7 @@ import getpass
 import io
 import os
 import shutil
+import subprocess
 import sys
 import time
 
@@ -11,7 +12,7 @@ try:
 except ImportError:
     readline = None
 
-from . import ai, commands, completions, config, gadgets, i18n, pipe, tools, webclone
+from . import ai, commands, completions, config, gadgets, i18n, kits, pipe, snippets, tools, webclone
 from .i18n import t
 
 
@@ -38,7 +39,7 @@ class _OutputCapturer:
 def handle_dl(arg):
     args = arg.split() if arg else []
     if not args:
-        print(t("dl.usage_help"))
+        print(config.wrap_text(t("dl.usage_help")))
         return
 
     if args[0] == "list":
@@ -57,7 +58,7 @@ def handle_dl(arg):
     force = "--redo" in args or "--force" in args
     urls = [a for a in args if not a.startswith("-")]
     if not urls:
-        print(t("dl.usage_simple"))
+        print(config.wrap_text(t("dl.usage_simple")))
         return
     tools.download_batch(
         urls, audio_only=audio_only, dry_run=dry_run, force=force
@@ -106,25 +107,31 @@ def handle_ascii(arg):
 def show_banner():
     """Menampilkan Tampilan Awal / ASCII Art"""
     config.clear_screen()
+    if config.term_width() < 44:
+        print(
+            f"{config.GREEN_NEON}=== RydzzShell v2.4 ==={config.RESET}\n"
+            f"{config.YELLOW}  {t('banner.hint')}{config.RESET}"
+        )
+        return
     banner = f"""{config.GREEN_NEON}
-  _____ydzz   _____ _          _ 
- |  __ \\     / ____| |        | |
- | |__) |   | (___ | |__   ___| |
- |  _  /     \\___ \\| '_ \\ / _ \\ |
- | | \\ \\ _   ____) | | | |  __/ |
- |_|  \\_(_) |_____/|_| |_|\\___|_|
-{config.CYAN}    --- Custom Interactive Shell v2.3 ---{config.RESET}
+██████╗ ██╗   ██╗██████╗ ███████╗███████╗
+██╔══██╗╚██╗ ██╔╝██╔══██╗╚══███╔╝╚══███╔╝
+██████╔╝ ╚████╔╝ ██║  ██║  ███╔╝   ███╔╝
+██╔══██╗  ╚██╔╝  ██║  ██║ ███╔╝   ███╔╝
+██║  ██║   ██║   ██████╔╝███████╗███████╗
+╚═╝  ╚═╝   ╚═╝   ╚═════╝ ╚══════╝╚══════╝
+{config.CYAN}    --- Custom Interactive Shell v2.4 ---{config.RESET}
 {config.YELLOW}  {t('banner.hint')}{config.RESET}
 """
     print(banner)
 
 
 def show_help():
-    print("=" * 65)
+    print(config.divider())
     print(t("help.title"))
-    print("=" * 65)
-    print(t("help.body"))
-    print("=" * 65)
+    print(config.divider())
+    print(config.wrap_text(t("help.body")))
+    print(config.divider())
 
 
 # Mode bantuan terpisah untuk auto-cd (cegah kebingungan nama command)
@@ -151,9 +158,9 @@ def handle_custom_ls(arg):
 def text_generator():
     while True:
         config.clear_screen()
-        print("=" * 42)
+        print(config.divider())
         print(t("tg.title"))
-        print("=" * 42 + "\n")
+        print(config.divider() + "\n")
         print(t("tg.exit") + "\n")
         try:
             text = input(t("tg.input_text"))
@@ -599,9 +606,6 @@ def handle_command(single_command):
     elif cmd == "htop":
         config.run_system_cmd("htop")
 
-    elif cmd == "print":
-        print("kocak")
-
     elif cmd == "TG":
         text_generator()
 
@@ -635,8 +639,47 @@ def handle_command(single_command):
     elif cmd == "lang":
         handle_lang(arg)
 
+    elif cmd == "trash":
+        kits.trash(arg)
+
+    elif cmd in ("bk", "backup"):
+        kits.backup(arg)
+
+    elif cmd == "hash":
+        kits.hashit(arg)
+
+    elif cmd == "freq":
+        kits.freq(arg)
+
+    elif cmd == "clip":
+        kits.clip(arg)
+
+    elif cmd == "todo":
+        kits.todo(arg)
+
+    elif cmd == "serve":
+        kits.serve(arg)
+
+    elif cmd == "pick":
+        kits.pick(arg)
+
+    elif cmd == "task":
+        snippets.task(arg, runner=handle_command)
+
     elif cmd == "exit":
         sys.exit()
+
+    elif cmd == "restart":
+        config.clear_screen()
+        os.environ.pop("RYDZZ_INIT", None)
+        os.environ.pop("RYDZZ_LEVEL", None)
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        cli_path = os.path.join(repo_root, "CLI.py")
+        if os.name == "posix":
+            os.execv(sys.executable, [sys.executable, cli_path])
+        else:
+            subprocess.Popen([sys.executable, cli_path])
+            sys.exit()
 
     else:
         # --- AUTO-CDF (fallback) ---
@@ -747,8 +790,8 @@ def handle_lang(arg):
         return
 
     print(t("lang.current", name=i18n.language_name(), code=i18n.get_language()))
-    print(t("lang.usage_help"))
-    print(t("lang.usage_hint"))
+    print(config.wrap_text(t("lang.usage_help")))
+    print(config.wrap_text(t("lang.usage_hint")))
 
 
 def main():

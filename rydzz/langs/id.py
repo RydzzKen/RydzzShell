@@ -56,10 +56,16 @@ STRINGS = {
 • weather [kota]           - Cuaca kota (default: jakarta)
 • lang                     - Atur bahasa shell (lang list, lang -C)
 • clear                    - Membersihkan layar
+• restart                   - Restart shell tanpa keluar
 • exit                     - Keluar dari shell
 • <cmd1> && <cmd2>         - Menjalankan 2 perintah sekaligus
 • cmd1 | cmd2              - Pipe output cmd1 ke cmd2
     (bisa dipipe ke builtin: help | grep, history | grep, ...)
+• trash / bk / hash         - Hapus aman, backup, checksum
+• todo / clip / freq        - Daftar tugas, clipboard, statistik
+• serve [port] [folder]     - HTTP server buat kirim file
+• pick [query]              - Cari file interaktif (fuzzy)
+• task                      - Snippet perintah bernama (task save <nama> "<cmd>")
 
 --- SHORTCUT GIT ---
 • gs=status ga=add gl=log gb=branch gd=diff
@@ -284,6 +290,60 @@ STRINGS = {
     "git.gc_usage": "Guna: gc <pesan_commit>",
     "git.gco_usage": "Guna: gco <nama_branch>",
     "git.gclone_usage": "Guna: gclone <url_repo>",
+
+    # ---------- kit harian ----------
+    "kits.trash.usage": "Guna: trash <path...> | trash list | trash restore <n|nama> | trash empty",
+    "kits.trash.not_found": "trash: '{path}' tidak ditemukan",
+    "kits.trash.protected": "trash: '{path}' terproteksi — tidak bisa dihapus",
+    "kits.trash.moved": "trash: '{src}' → .trash/{dst}",
+    "kits.trash.empty": "Trash kosong.",
+    "kits.trash.restore_hint": "Pulihkan: trash restore <nomor>",
+    "kits.trash.restore_usage": "Guna: trash restore <nomor|nama>",
+    "kits.trash.invalid_index": "trash: nomor '{n}' tidak valid",
+    "kits.trash.not_in_trash": "trash: '{name}' tidak ada di trash",
+    "kits.trash.restored": "trash: '{name}' dipulihkan",
+    "kits.trash.cleared": "Trash dikosongkan.",
+    "kits.bk.usage": "Guna: bk <path...> | bk list | bk restore <nomor>",
+    "kits.bk.not_found": "bk: '{path}' tidak ditemukan",
+    "kits.bk.backed": "bk: '{src}' → backup",
+    "kits.bk.empty": "Belum ada backup.",
+    "kits.bk.restore_hint": "Pulihkan: bk restore <nomor>",
+    "kits.bk.restore_usage": "Guna: bk restore <nomor>",
+    "kits.bk.invalid_index": "bk: nomor '{n}' tidak valid",
+    "kits.bk.restored": "bk: '{name}' dipulihkan ke {dest}",
+    "kits.hash.usage": "Guna: hash <file|teks> [-a md5|sha1|sha256|sha512]",
+    "kits.hash.unknown_algo": "hash: algoritma '{algo}' tidak dikenal",
+    "kits.freq.invalid_n": "freq: '{n}' bukan angka",
+    "kits.freq.empty": "Belum ada riwayat untuk dihitung.",
+    "kits.freq.title": "Top {n} perintah terpopuler:",
+    "kits.clip.usage": "Guna: clip set <teks> | clip get | clip file <path>",
+    "kits.clip.no_backend": "clip: tidak ada backend clipboard (xclip/wl-copy/termux-clipboard)",
+    "kits.clip.copied": "clip: teks tersalin",
+    "kits.clip.empty": "(clipboard kosong)",
+    "kits.clip.not_found": "clip: '{path}' tidak ditemukan",
+    "kits.todo.usage": "Guna: todo add <teks> | todo list | todo done <n> | todo del <n> | todo clear",
+    "kits.todo.add_usage": "Guna: todo add <teks>",
+    "kits.todo.added": "todo: {n} tugas tersimpan",
+    "kits.todo.empty": "Belum ada tugas.",
+    "kits.todo.cleared": "Semua tugas dihapus.",
+    "kits.serve.not_dir": "serve: '{path}' bukan folder",
+    "kits.serve.banner": "{green}  Server Rydzz siap!{reset}",
+    "kits.serve.hint_local": "  Local:   http://127.0.0.1:{port}",
+    "kits.serve.hint_net": "  Network: http://{ip}:{port}",
+    "kits.serve.background": "serve: berjalan di background (kill via 'pkill -f http.server' bila perlu).",
+    "kits.serve.stop_hint": "  Tekan Ctrl+C untuk berhenti.",
+    "kits.pick.empty": "pick: tidak ada file yang cocok",
+    "kits.pick.prompt": "Pilih nomor: ",
+    "kits.pick.invalid": "pick: pilihan tidak valid",
+
+    # ---------- task runner ----------
+    "kits.task.usage": "Guna: task | task save <nama> \"<cmd $1>\" | task <nama> <args...> | task del <nama>",
+    "kits.task.save_usage": "Guna: task save <nama> \"<perintah...>\"",
+    "kits.task.saved": "task: '{name}' tersimpan",
+    "kits.task.deleted": "task: '{name}' dihapus",
+    "kits.task.not_found": "task: '{name}' tidak ditemukan",
+    "kits.task.empty": "Belum ada snippet.",
+    "kits.task.list_title": "Snippet tersimpan:",
 }
 
 # Langkah `ai tour` (judul, deskripsi, contoh)
@@ -329,5 +389,15 @@ AI_TOPICS = {
     "cat": "baca isi file",
     "sudo": "sudo edit <file> untuk file terproteksi",
     "lang": "atur bahasa shell: lang list, lang -C <kode>",
+    "restart": "restart shell tanpa perlu keluar (semua state segar kembali)",
     "exit": "keluar dari shell",
+    "trash": "hapus aman: trash <file>, trash list, trash restore <n>",
+    "bk": "backup file/folder: bk <path>, bk list, bk restore <n>",
+    "hash": "cek checksum: hash <file|teks> [-a md5|sha1|sha256|sha512]",
+    "freq": "lihat perintah paling sering dipakai dari riwayat",
+    "clip": "copy/paste clipboard: clip set <teks>, clip get, clip file <path>",
+    "todo": "daftar tugas: todo add <teks>, todo list, todo done <n>",
+    "serve": "jalankan HTTP server: serve [port] [folder], buat kirim file",
+    "pick": "cari file interaktif dengan fuzzy match",
+    "task": "snippet perintah bernama: task save <nama> \"<cmd $1>\", task <nama>",
 }

@@ -73,11 +73,24 @@ def execute_pipeline(cmd_str, builtin_runner=None):
     Custom 'ls' diproses secara internal (capture_ls). Segmen lain dicoba ke
     builtin_runner (callback ke builtin shell) dulu; jika None (bukan builtin)
     jatuh ke subprocess shell.
+    `... | tee <file>` di akhir menulis output ke file sekaligus ke layar.
     """
     segments = split_pipes(cmd_str)
     if len(segments) == 1:
         # tidak benar-benar pipe, serahkan ke handler biasa
         return None
+
+    tee_file = None
+    tee_append = False
+    last_parts = segments[-1].split()
+    if last_parts and last_parts[0] == "tee":
+        tee_args = last_parts[1:]
+        if "-a" in tee_args:
+            tee_append = True
+            tee_args = [a for a in tee_args if a != "-a"]
+        if tee_args:
+            tee_file = tee_args[0]
+        segments = segments[:-1]
 
     output = None
     for seg in segments:
@@ -99,5 +112,11 @@ def execute_pipeline(cmd_str, builtin_runner=None):
             output = _run_segment(seg, input_data=output)
 
     if output is not None:
+        if tee_file:
+            try:
+                with open(tee_file, "a" if tee_append else "w") as f:
+                    f.write(output)
+            except Exception as e:
+                print(f"tee: {e}")
         print(output, end="" if output.endswith("\n") else "\n")
     return True

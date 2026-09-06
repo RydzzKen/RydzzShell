@@ -3,6 +3,7 @@ import re
 import shutil
 import subprocess
 import sys
+import textwrap
 import time
 
 from . import i18n
@@ -178,6 +179,47 @@ def is_protected(path):
 
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
+
+
+def term_width():
+    """Lebar terminal saat ini (fallback 80 kolom)."""
+    try:
+        return shutil.get_terminal_size().columns
+    except Exception:
+        return 80
+
+
+def divider(char="=", cap=80):
+    """Garis pemisah mengikuti lebar terminal, dibatasi maks `cap`."""
+    return char * max(10, min(term_width(), cap))
+
+
+def wrap_text(text, width=None, indent=2):
+    """Bungkus baris panjang agar pas dengan lebar terminal.
+
+    Baris yang sudah pendek dibiarkan utuh; newline eksisting dipertahankan
+    dan kata panjang (URL/path) tidak dipecah.
+    """
+    if width is None:
+        width = term_width()
+    out = []
+    for line in text.split("\n"):
+        if len(ANSI_RE.sub("", line)) <= width:
+            out.append(line)
+            continue
+        lead = len(line) - len(line.lstrip(" "))
+        sub = " " * (lead + indent)
+        wrapped = textwrap.wrap(
+            line[lead:],
+            width=max(10, width - lead),
+            break_long_words=False,
+            break_on_hyphens=False,
+            replace_whitespace=False,
+            subsequent_indent=sub,
+        )
+        wrapped[0] = " " * lead + wrapped[0].lstrip()
+        out.append("\n".join(wrapped))
+    return "\n".join(out)
 
 
 def reset_terminal():
@@ -357,6 +399,11 @@ def load_rydzzrc():
             elif key == "lang":
                 if i18n.set_language(value):
                     CONFIG["lang"] = i18n.get_language()
+            elif key == "env":
+                # env=KEY=VALUE -> set environment variable untuk shell & child
+                k, _, v = value.partition("=")
+                if k.strip():
+                    os.environ[k.strip()] = v.strip()
     return
 
 

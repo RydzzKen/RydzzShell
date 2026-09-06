@@ -5,11 +5,12 @@ Built as a learning project and a daily driver: file navigation, git
 management, media downloads, QR codes, ASCII conversion, and command
 pipelining — all from one colorful terminal.
 
-> Version: **2.3** — multi-language (English/Indonesian), persistent history,
-> pipes into builtins, batch/re-download in `dl`, adaptive `dl list` columns,
-> and unit tests (pytest).
+> Version: **2.4** — multi-language (English/Indonesian), persistent history,
+> pipes into builtins (incl. `| tee`), daily kits (`trash`, `backup`, `hash`,
+> `freq`, `clip`, `todo`, `serve`, `pick`), named `task` snippets, and unit
+> tests (pytest).
 
-![Version](https://img.shields.io/badge/Version-v2.3-2ea44f)
+![Version](https://img.shields.io/badge/Version-v2.4-2ea44f)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Dependency](https://img.shields.io/badge/Core-Zero%20dependency-6f42c1)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%E2%80%A2%20Termux%20%E2%80%A2%20macOS%20%E2%80%A2%20Windows-brightgreen)
@@ -26,12 +27,15 @@ pipelining — all from one colorful terminal.
 - Smart **tab completion** (commands, aliases, paths) — `.bashrc` aliases are
   refreshed automatically after `source ~/.bashrc`
 - **Pipes** (`cmd1 | cmd2`) and **chaining** (`cmd1 && cmd2`) — pipes can now
-  **enter builtins** (`help | grep`, `history | grep`, `echo | tr`, etc.)
+  **enter builtins** (`help | grep`, `history | grep`, `echo | tr`, etc.);
+  append `| tee <file>` to also write the output to a file (`-a` to append)
 - Output **redirection** (`>` and `>>`)
+- **`restart`** — reload the shell instantly without exiting (state stays
+  fresh, e.g. right after changing `.rydzzrc` or `lang`)
 - **Sandbox HOME**: commands run in `~/.rydzz_home`, separate from your real
   home — except `gh`/`git`/`yt-dlp`, which use your real credentials
 - `.rydzzrc` file (see template) for: prompt color, banner, hidden files,
-  auto-cd, custom aliases, protected files, `init` commands
+  auto-cd, custom aliases, protected files, `init` commands, `env=` variables
 - `sudo newpass` & `sudo edit` for protected secret files
 
 ### 📦 File & Folder Management
@@ -127,6 +131,26 @@ dl update               Update yt-dlp
 - `weather [city]` — weather from wttr.in (no API key); default city from
   `.rydzzrc` (`weather city=jakarta`), e.g. `weather bandung`
 
+### 🧰 Daily Kits
+- `trash <file...>` — safe delete to `~/.rydzz_home/.trash` (`trash list`,
+  `trash restore <n|name>`, `trash empty`); protected files are refused.
+  For permanent deletion use plain `rm`
+- `bk <path>` (alias `backup`) — timestamped backup to
+  `~/.rydzz_home/.backups` (`bk list`, `bk restore <n>`)
+- `hash <file|text> [-a md5|sha1|sha256|sha512]` — checksums (default `sha256`)
+- `freq [n]` — top-N most-used commands from history with a bar chart
+- `clip set <text> | clip get | clip file <path>` — clipboard via
+  termux-clipboard / wl-copy / xclip / xsel / pbcopy / pbpaste
+- `todo add <text> | todo list | todo done <n> | todo del <n> | todo clear` —
+  lightweight task list (`~/.rydzz_home/.rydzz_todo`)
+- `serve [port] [folder] [-b]` — HTTP server to share files over Wi-Fi/phone;
+  runs in the foreground or in the background with `-b`
+- `pick [query]` — interactive fuzzy file picker
+- `task` — named snippets: `task save <name> "<cmd $1>"`, `task <name> <args>`,
+  `task list`, `task del <name>`. Placeholders `$1..$n` and `$@` are
+  substituted and the result runs back through the normal shell (chaining,
+  pipes, aliases all work inside a snippet)
+
 ### 🤖 AI Guide — RydzAgent
 - `ai <question>` — ask anything (free Gemini, follows the shell language)
 - `ai tour` — interactive tour of shell features
@@ -173,6 +197,7 @@ Copy `rydzzrc.template` to `~/.rydzz_home/.rydzzrc`. Available directives:
 | `init=` | `init=clear` | Command(s) to run automatically at startup |
 | `weather city=` | `weather city=bandung` | Default city for `weather` |
 | `lang=` | `lang=id` | Shell UI language (`en` default, `id`, `en`) |
+| `env=` | `env=PAGER=more` | Set an environment variable for the shell & children |
 
 ---
 
@@ -194,6 +219,8 @@ Rydzz/
     ├── webclone.py       # wclone — web page cloner → zip
     ├── ai.py             # RydzAgent — AI guide (Gemini, optional)
     ├── gadgets.py        # timer, stopwatch, calc, weather
+    ├── kits.py           # Daily kits: trash, bk, hash, freq, clip, todo, serve, pick
+    ├── snippets.py       # task runner — named snippets (JSON)
     ├── i18n.py           # Multi-language support (translations, lang)
     └── langs/            # Language packs (id.py, en.py, ...)
 ```

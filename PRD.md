@@ -3,10 +3,10 @@
 | | |
 | --- | --- |
 | **Product** | Rydzz — Custom Interactive Shell |
-| **PRD Version** | 1.3 |
-| **Product Version** | 2.3 |
+| **PRD Version** | 1.4 |
+| **Product Version** | 2.4 |
 | **Author** | RydzzKen |
-| **Status** | Launched (v2.3) |
+| **Status** | Launched (v2.4) |
 
 ---
 
@@ -22,7 +22,8 @@ a learning project and a personal daily driver.
 1. Provide a shell interface that is fun and easy to use (multi-language:
    English and Indonesian, colored prompt, custom banner).
 2. Consolidate daily developer tasks in one place: file navigation, git,
-   media downloads, QR, ASCII conversion.
+   media downloads, QR, ASCII conversion, and daily kits (safe delete,
+   backup, checksum, clipboard, task lists, file sharing).
 3. Sandbox HOME so shell commands cannot damage the real home directory,
    while still using real credentials for `gh`/`git`/`yt-dlp`.
 4. Run the core without any dependency — portable across devices
@@ -77,12 +78,16 @@ a learning project and a personal daily driver.
 | F19 | `dl` batch/playlist | Download many URLs `url1 url2 ...`, playlists without `--no-playlist`, `--redo`, `dl list` adaptive columns (-n/-s) |
 | F20 | Unit tests | pytest for commands/tools/pipe/gadgets/history/completions |
 | F24 | Multi-language (`lang`) | English default / Bahasa Indonesia; `lang list`, `lang -C <code>`, `lang -C` interactive picker, persistent via `lang=` in `.rydzzrc`; all user-facing output translated through `rydzz/i18n.py` + `rydzz/langs/` packs |
+| F25 | Daily kits (safe ops) | `trash` (safe delete + `list`/`restore`/`empty`, refuses protected files), `bk`/`backup` (timestamped backups + `list`/`restore`), `hash` (`-a md5`/`sha1`/`sha256`/`sha512`), `freq [n]` (top commands from history), `clip set/get/file` (auto backend), `todo add/list/done/undone/del/clear` |
+| F26 | `serve` & `pick` | `serve [port] [dir] [-b]` HTTP file sharing (foreground/background, LAN address hint); `pick [query]` interactive fuzzy file picker over the current tree |
+| F27 | `task` runner | Named snippets (JSON at `~/.rydzz_home/.rydzz_snippets`), `$1..$n` / `$@` substitution, result re-dispatched through the shell (chaining/pipes/aliases work inside snippets) |
+| F28 | Tee pipes & `env=` config | `cmd \| tee <file>` (with `-a` append) captures builtin output too; `env=KEY=VALUE` in `.rydzzrc` sets environment variables for the shell & children |
+| F29 | `restart` | Reload the shell instantly without exiting (fresh state) |
 
 ### P2 — Next up
 | ID | Feature | Description |
 | --- | --- | --- |
-| (open) | Stack/task runner & script config | Snippets across languages & user plugins as a future direction |
-| (open) | Two-way / tee pipes & `.rydzzrc` sync | Redirect pipe output to file, deeper environment variable integration |
+| (open) | User plugins / script config | Extensible user plugins & script configuration as a future direction |
 
 ## 6. Technical Architecture
 
@@ -104,6 +109,10 @@ a learning project and a personal daily driver.
     stdlib `urllib`), offline fallback without API key.
   - `gadgets.py` — daily tools: `timer`, `stopwatch`, `calc` (safe AST
     parser, stdlib `ast`), `weather` (wttr.in via stdlib `urllib`, no key).
+  - `kits.py` — daily kits (F25/F26): `trash`, `backup`, `hash`, `freq`,
+    `clip`, `todo`, `serve`, `pick` (all stdlib).
+  - `snippets.py` — `task` runner (F27): named snippets in JSON, `$1..$n`/
+    `$@` substitution, recursive re-dispatch into the shell.
   - `i18n.py` — translation engine (`t()`, set/get/list language, error
     sniffer per language).
   - `langs/` — language packs (`id.py`, `en.py`, ...).
@@ -137,7 +146,9 @@ a learning project and a personal daily driver.
 - Ease of use: all core features used without reading documentation.
 - Task completion: download a video (yt-dlp), download a Spotify song
   (spotdl), make a QR, convert ASCII, quick math (`calc`), cooking timer
-  (`timer`), weather check (`weather`), and git push from a single shell.
+  (`timer`), weather check (`weather`), git push, a safe delete via `trash`
+  with a working `hash` checksum, and `serve` a folder from a phone — all
+  from a single shell.
 - Portability: runs on Linux, Termux/Android, macOS, Windows.
 
 ## 10. Roadmap
@@ -151,6 +162,9 @@ a learning project and a personal daily driver.
   re-download plus adaptive `dl list` in `dl` (F19), pytest unit tests (F20).
 - **v2.3** — multi-language (F24): `lang` command, `rydzz/i18n.py` engine,
   language packs under `rydzz/langs/`, English default, `lang=` config key.
+- **v2.4** — daily kits (F25): `trash`, `bk`/`backup`, `hash`, `freq`,
+  `clip`, `todo`; `serve` & `pick` (F26); `task` snippet runner (F27);
+  `| tee` pipes & `env=` config (F28); `restart` (F29); new 2.4 banner.
 
 ---
 

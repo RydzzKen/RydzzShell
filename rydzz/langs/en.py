@@ -56,10 +56,16 @@ STRINGS = {
 • weather [city]           - City weather (default: jakarta)
 • lang                     - Set the shell language (lang list, lang -C)
 • clear                    - Clear the screen
+• restart                   - Restart the shell without exiting
 • exit                     - Exit the shell
 • <cmd1> && <cmd2>         - Run 2 commands at once
 • cmd1 | cmd2              - Pipe cmd1 output to cmd2
     (can be piped into builtins: help | grep, history | grep, ...)
+• trash / bk / hash         - Safe delete, backup, checksum
+• todo / clip / freq        - Task list, clipboard, statistics
+• serve [port] [folder]     - HTTP server for sharing files
+• pick [query]              - Interactive fuzzy file finder
+• task                      - Named snippets (task save <name> "<cmd>")
 
 --- GIT SHORTCUTS ---
 • gs=status ga=add gl=log gb=branch gd=diff
@@ -284,6 +290,60 @@ STRINGS = {
     "git.gc_usage": "Usage: gc <commit_message>",
     "git.gco_usage": "Usage: gco <branch_name>",
     "git.gclone_usage": "Usage: gclone <repo_url>",
+
+    # ---------- daily kits ----------
+    "kits.trash.usage": "Usage: trash <path...> | trash list | trash restore <n|name> | trash empty",
+    "kits.trash.not_found": "trash: '{path}' not found",
+    "kits.trash.protected": "trash: '{path}' is protected — cannot delete",
+    "kits.trash.moved": "trash: '{src}' → .trash/{dst}",
+    "kits.trash.empty": "Trash is empty.",
+    "kits.trash.restore_hint": "Restore with: trash restore <number>",
+    "kits.trash.restore_usage": "Usage: trash restore <number|name>",
+    "kits.trash.invalid_index": "trash: index '{n}' is invalid",
+    "kits.trash.not_in_trash": "trash: '{name}' is not in the trash",
+    "kits.trash.restored": "trash: '{name}' restored",
+    "kits.trash.cleared": "Trash emptied.",
+    "kits.bk.usage": "Usage: bk <path...> | bk list | bk restore <number>",
+    "kits.bk.not_found": "bk: '{path}' not found",
+    "kits.bk.backed": "bk: '{src}' → backup",
+    "kits.bk.empty": "No backups yet.",
+    "kits.bk.restore_hint": "Restore with: bk restore <number>",
+    "kits.bk.restore_usage": "Usage: bk restore <number>",
+    "kits.bk.invalid_index": "bk: index '{n}' is invalid",
+    "kits.bk.restored": "bk: '{name}' restored to {dest}",
+    "kits.hash.usage": "Usage: hash <file|text> [-a md5|sha1|sha256|sha512]",
+    "kits.hash.unknown_algo": "hash: unknown algorithm '{algo}'",
+    "kits.freq.invalid_n": "freq: '{n}' is not a number",
+    "kits.freq.empty": "No history to count yet.",
+    "kits.freq.title": "Top {n} most-used commands:",
+    "kits.clip.usage": "Usage: clip set <text> | clip get | clip file <path>",
+    "kits.clip.no_backend": "clip: no clipboard backend found (xclip/wl-copy/termux-clipboard)",
+    "kits.clip.copied": "clip: text copied",
+    "kits.clip.empty": "(clipboard is empty)",
+    "kits.clip.not_found": "clip: '{path}' not found",
+    "kits.todo.usage": "Usage: todo add <text> | todo list | todo done <n> | todo delete <n> | todo clear",
+    "kits.todo.add_usage": "Usage: todo add <text>",
+    "kits.todo.added": "todo: {n} task(s) saved",
+    "kits.todo.empty": "No tasks yet.",
+    "kits.todo.cleared": "All tasks cleared.",
+    "kits.serve.not_dir": "serve: '{path}' is not a folder",
+    "kits.serve.banner": "{green}  Rydzz server ready!{reset}",
+    "kits.serve.hint_local": "  Local:   http://127.0.0.1:{port}",
+    "kits.serve.hint_net": "  Network: http://{ip}:{port}",
+    "kits.serve.background": "serve: running in background (kill via 'pkill -f http.server' if needed).",
+    "kits.serve.stop_hint": "  Press Ctrl+C to stop.",
+    "kits.pick.empty": "pick: no matching files",
+    "kits.pick.prompt": "Choose a number: ",
+    "kits.pick.invalid": "pick: invalid choice",
+
+    # ---------- task runner ----------
+    "kits.task.usage": "Usage: task | task save <name> \"<cmd $1>\" | task <name> <args...> | task delete <name>",
+    "kits.task.save_usage": "Usage: task save <name> \"<command...>\"",
+    "kits.task.saved": "task: '{name}' saved",
+    "kits.task.deleted": "task: '{name}' deleted",
+    "kits.task.not_found": "task: '{name}' not found",
+    "kits.task.empty": "No snippets yet.",
+    "kits.task.list_title": "Saved snippets:",
 }
 
 # `ai tour` steps (title, description, example)
@@ -329,5 +389,15 @@ AI_TOPICS = {
     "cat": "read a file's contents",
     "sudo": "sudo edit <file> for protected files",
     "lang": "set the shell language: lang list, lang -C <code>",
-    "exit": "leave the shell",
+    "restart": "restart the shell without exiting (all state comes back fresh)",
+    "exit": "exit the shell",
+    "trash": "safe delete: trash <file>, trash list, trash restore <n>",
+    "bk": "back up a file/folder: bk <path>, bk list, bk restore <n>",
+    "hash": "checksums: hash <file|text> [-a md5|sha1|sha256|sha512]",
+    "freq": "show the most-used commands from history",
+    "clip": "clipboard copy/paste: clip set <text>, clip get, clip file <path>",
+    "todo": "task list: todo add <text>, todo list, todo done <n>",
+    "serve": "run an HTTP server: serve [port] [folder], for sharing files",
+    "pick": "interactively find files with fuzzy match",
+    "task": "named command snippets: task save <name> \"<cmd $1>\", task <name>",
 }

@@ -9,7 +9,7 @@ BUILTIN_COMMANDS = [
     "ping", "zip", "unzip", "tar", "grep", "find", "df", "free",
     "ps", "neofetch", "fastfetch", "whoami", "passwd", "passw",
     "source", "sudo", "alias", "aliases", "list", "help", "?",
-    "clear", "htop", "print", "TG", "exit",
+    "clear", "htop", "TG", "exit", "restart",
     # git shortcuts
     "gs", "ga", "gl", "gb", "gd", "gp", "gpl", "gst", "gc", "gco",
     "gclone",
@@ -21,6 +21,9 @@ BUILTIN_COMMANDS = [
     "timer", "stopwatch", "calc", "weather",
     # multi-bahasa
     "lang",
+    # kit harian & task runner
+    "trash", "bk", "backup", "hash", "freq", "clip", "todo",
+    "serve", "pick", "task",
 ]
 
 _PATH_CACHE = {}

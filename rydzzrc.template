@@ -48,3 +48,7 @@
 
 # Bahasa antarmuka shell (id=Bahasa Indonesia, en=English) — default en
 # lang=en
+
+# Set environment variable saat startup: env=KEY=VALUE
+# env=RYDZZ_TEMA=gelap
+# env=PAGER=more

@@ -1,5 +1,4 @@
 import os
-import shutil
 import stat
 import time
 
@@ -116,10 +115,7 @@ def _render_grid(items, target_path, show_hidden):
         else:
             formatted_items.append(item)
 
-    try:
-        term_width = os.get_terminal_size().columns
-    except OSError:
-        term_width = 80
+    term_width = config.term_width()
 
     max_len = max(raw_lengths) + 3
     col_count = max(1, term_width // max_len)

@@ -499,10 +499,7 @@ def list_downloads(opts=None):
         )
     )
 
-    try:
-        term_width = os.get_terminal_size().columns
-    except OSError:
-        term_width = 80
+    term_width = config.term_width()
     name_width = max(len(e[1]) for e in entries)
     name_width = min(name_width, max(12, term_width - 26))
     fmt = f"  {{:<{name_width}}}  {{:>9}}  {{}}"
