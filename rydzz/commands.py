@@ -4,6 +4,7 @@ import stat
 import time
 
 from . import config
+from .i18n import t
 
 # Nama-nama flag yang didukung ls
 VALID_LS_FLAGS = {
@@ -102,7 +103,7 @@ def _render_long_line(target_path, item):
 
 def _render_grid(items, target_path, show_hidden):
     if not items:
-        return "(Folder kosong)"
+        return t("ls.empty")
 
     formatted_items = []
     raw_lengths = []
@@ -153,15 +154,13 @@ def custom_ls(*args):
                 elif ch == "h":
                     pass
                 else:
-                    print(f"ls: tidak mengenali opsi '-{ch}'")
+                    print(t("ls.bad_flag", ch=ch))
                     return
         else:
             target = os.path.expanduser(a)
 
     if not os.path.exists(target):
-        print(
-            f"ls: tidak dapat mengakses '{target}': No such file or directory"
-        )
+        print(t("ls.no_access", target=target))
         return
 
     if os.path.isfile(target):
@@ -172,7 +171,7 @@ def custom_ls(*args):
     items = _collect_items(target, show_hidden)
     if long_mode:
         if not items:
-            print("(Folder kosong)")
+            print(t("ls.empty"))
             return
         print(f"total {len(items)}")
         for item in items:
@@ -200,7 +199,7 @@ def capture_ls(*args):
     if not os.path.exists(target) or os.path.isfile(target):
         if os.path.isfile(target):
             return os.path.basename(target)
-        return f"ls: tidak dapat mengakses '{target}'"
+        return t("ls.capture_noaccess", target=target)
 
     items = _collect_items(target, show_hidden)
     if long_mode:
@@ -215,7 +214,7 @@ def custom_tree(target=".", depth=0, prefix="", _level=0, _limit=50, _root=True)
     """Menampilkan struktur direktori dalam format pohon."""
     target = os.path.expanduser(target)
     if not os.path.isdir(target):
-        print(f"tree: '{target}' bukan direktori.")
+        print(t("tree.not_dir", target=target))
         return
 
     if _root:
@@ -238,7 +237,7 @@ def custom_tree(target=".", depth=0, prefix="", _level=0, _limit=50, _root=True)
         items.append(item)
 
     if _limit and len(items) > _limit:
-        print(f"{prefix}{len(items) - _limit} item tersembunyi...")
+        print(t("tree.items_hidden", prefix=prefix, n=len(items) - _limit))
         items = items[:_limit]
 
     for idx, item in enumerate(items):
@@ -276,18 +275,18 @@ def run_git_shortcut(name, arg):
         if arg:
             config.run_system_cmd_real_home(f'git commit -m "{arg}"')
         else:
-            print("Guna: gc <pesan_commit>")
+            print(t("git.gc_usage"))
         return True
     elif name == "gco":
         if arg:
             config.run_system_cmd_real_home(f'git checkout "{arg}"')
         else:
-            print("Guna: gco <nama_branch>")
+            print(t("git.gco_usage"))
         return True
     elif name == "gclone":
         if arg:
             config.run_system_cmd_real_home(f'git clone "{arg}"')
         else:
-            print("Guna: gclone <url_repo>")
+            print(t("git.gclone_usage"))
         return True
     return False

@@ -12,6 +12,7 @@ from urllib.parse import urljoin, urlparse, urlsplit, unquote
 from urllib.request import Request, urlopen
 
 from . import config, tools
+from .i18n import t
 
 WEB_ROOT = os.path.join(tools.DOWNLOAD_DIR, "rydzzWeb")
 
@@ -315,7 +316,7 @@ def clone_site(url):
     Menghasilkan: ~/Downloads/rydzzWeb/<domain>_<timestamp>.zip
     """
     if not url:
-        print("Guna: wclone <url>  (misal: wclone https://example.com)")
+        print(t("wc.usage"))
         return False, None
 
     raw = url.strip().strip('"').strip("'")
@@ -324,14 +325,14 @@ def clone_site(url):
 
     parsed = urlparse(raw)
     if parsed.scheme not in ("http", "https") or not parsed.netloc:
-        print("URL tidak valid. Gunakan format https://domain.")
+        print(t("wc.invalid_url"))
         return False, None
 
-    print(f"Mengklone {config.CYAN}{raw}{config.RESET} ...")
+    print(t("wc.cloning", cyan=config.CYAN, reset=config.RESET, url=raw))
     try:
         data, charset = _fetch(raw)
     except Exception as e:
-        print(f"Gagal mengunduh halaman: {e}")
+        print(t("wc.fetch_failed", e=e))
         return False, None
 
     html_text = _decode_html(data, charset)
@@ -342,7 +343,7 @@ def clone_site(url):
     raw_resources = collector.resources
 
     if not html_text.strip():
-        print("Halaman kosong.")
+        print(t("wc.empty_page"))
         return False, None
 
     stage = tempfile.mkdtemp(prefix="rydzz_wc_")
@@ -370,7 +371,7 @@ def clone_site(url):
 
     total_html = len(html_targets)
     if total_html:
-        print("Mengunduh aset halaman...")
+        print(t("wc.fetching_assets"))
         for i, (resolved, kind, src) in enumerate(html_targets, 1):
             cloner.fetch_resource(resolved, kind, raw=src)
             _progress(i, total_html, "HTML")
@@ -386,7 +387,7 @@ def clone_site(url):
     # Fase 2: unduh aset yang dirujuk url(...) di CSS, dengan progress
     css_targets = list(dict.fromkeys(cloner.collect_css_asset_urls()))
     if css_targets:
-        print("Mengunduh aset CSS...")
+        print(t("wc.fetching_css"))
         for i, resp_url in enumerate(css_targets, 1):
             cloner.fetch_resource(resp_url, "img", raw=resp_url)
             _progress(i, len(css_targets), "CSS")
@@ -409,21 +410,26 @@ def clone_site(url):
                     arc = os.path.relpath(full, stage)
                     zf.write(full, arc)
     except Exception as e:
-        print(f"Gagal membuat zip: {e}")
+        print(t("wc.zip_failed", e=e))
         shutil.rmtree(stage, ignore_errors=True)
         return False, None
 
     shutil.rmtree(stage, ignore_errors=True)
     size_kb = os.path.getsize(zip_path) / 1024
 
-    print(f"\n{config.GREEN_NEON}Klon berhasil!{config.RESET}")
+    print(t("wc.done", green=config.GREEN_NEON, reset=config.RESET))
     c = cloner.counts
     print(f"  HTML / CSS / JS / Media: "
           f"{1} / {c['css']} / {c['js']} / "
           f"{c['img'] + c['media'] + c['other']}")
-    print(f"  Aset berhasil: {cloner.saved}   Gagal: {cloner.failed}")
+    print(t("wc.assets_ok", ok=cloner.saved, failed=cloner.failed))
     print(
-        f"  Zip: {config.CYAN}{zip_path}{config.RESET} "
-        f"({size_kb:.1f} KB)"
+        t(
+            "wc.zip_path",
+            cyan=config.CYAN,
+            reset=config.RESET,
+            path=zip_path,
+            size=f"{size_kb:.1f}",
+        )
     )
     return True, zip_path

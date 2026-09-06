@@ -5,21 +5,12 @@ import urllib.error
 import urllib.request
 from urllib.parse import urljoin
 
-from . import config
+from . import config, i18n
+from .i18n import t
 
 DEFAULT_MODEL = "gemini-3.6-flash"
 DEFAULT_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 TIMEOUT = 60
-
-# Ringkasan fitur shell — jadi RydzAgent paham konteks.
-OVERVIEW = """FEATUR RYDZZ SHELL:
-- Navigasi: ls [-a/-l], tree, cd, pwd, mkdir, rm, mv, cp, cat, nano, touch
-- Git shortcut: gs, ga <semua add>, gc <pesan>, gp, gpl, gl, gb, gd, gco <branch>, gst, gclone <url>
-- Unduh media: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
-- QR: qr <teks> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
-- Klone web: wclone <url> (alias wcode) -> zip html/css/js/gambar/font
-- Utilitas: clear, history, echo, whoami, sudo edit, sudo newpass, source ~/.bashrc
-- Pipeline: cmd1 | cmd2 , chaining && , redirect > atau >>"""
 
 
 def _cfg():
@@ -37,14 +28,9 @@ def _cfg():
 
 def _system_prompt(cfg):
     return (
-        f"Kamu adalah {cfg['name']}, asisten pemandu yang ramah di dalam "
-        f"terminal/interactive shell bernama 'Rydzz'. Kamu dipanggil oleh "
-        f"pengguna bernama RydzzKen. Gunakan bahasa Indonesia kasual namun "
-        f"informatif, jawab singkat-padat dengan contoh perintah bila perlu. "
-        f"Kamu mengenal fitur shell ini:\n\n{OVERVIEW}\n\n"
-        f"Jika ditanya di luar itu, tetap bantu dengan gaya ramah. "
-        f"Jangan mengarang bahwa perintah shell tertentu ada jika tidak kamu "
-        f"kenal dari daftar di atas — tawarkan alternatif yang masuk akal."
+        t("ai.system.intro", name=cfg["name"])
+        + f"\n\n{i18n.ai_overview()}\n\n"
+        + t("ai.system.closing")
     )
 
 
@@ -122,49 +108,35 @@ def _stream_answer(cfg, messages):
 def _offline_respond(cfg, prompt):
     """Fallback tanpa key/internet: bantu dari daftar fitur lokal."""
     low = prompt.lower()
-    known = {k.lower(): v for k, v in _topic_map().items()}
+    known = {k.lower(): v for k, v in i18n.ai_topics().items()}
     for word, usage in known.items():
         if word in low:
             print(
-                f"{config.CYAN}{cfg['name']}{config.RESET} (offline): "
-                f"perintah '{word}' membantu: {usage}"
+                t(
+                    "ai.offline.hit",
+                    cyan=config.CYAN,
+                    reset=config.RESET,
+                    name=cfg["name"],
+                    word=word,
+                    usage=usage,
+                )
             )
             print(
-                f"  {config.DIM}Tips: aktifkan AI penuh dengan set "
-                f"'ai key' di ~/.rydzz_home/.rydzzrc.{config.RESET}"
+                t(
+                    "ai.offline.tip",
+                    dim=config.DIM,
+                    reset=config.RESET,
+                )
             )
             return
     print(
-        f"{config.CYAN}{cfg['name']}{config.RESET} (offline): "
-        f"aku belum online (tambah 'ai key' di .rydzzrc). "
-        f"Sementara ini, coba tanya tentang perintah seperti: "
-        f"ls, tree, git, dl, wclone, qr, ascii. "
-        f"Ketik 'help' untuk daftar lengkap."
+        t(
+            "ai.offline.generic",
+            cyan=config.CYAN,
+            reset=config.RESET,
+            name=cfg["name"],
+        )
     )
-
-
-def _topic_map():
-    return {
-        "ls": "lihat isi folder, tambah -a untuk hidden, -l untuk detail",
-        "tree": "struktur folder seperti pohon, tree -L 2 untuk kedalaman",
-        "git": "gs=status, ga=add, gc=commit, gp=push, gl=log, gb=branch",
-        "gs": "git status",
-        "dl": "unduh video/lagu: dl <url>, -q untuk audio mp3",
-        "wclone": "klone satu halaman web ke zip (HTML/CSS/JS/gambar)",
-        "wcode": "alias dari wclone",
-        "qr": "buat QR: qr <teks>, simpan dengan -o file.png",
-        "ascii": "encode/decode ASCII: ascii enc|dec [-x hex] [-b biner]",
-        "history": "lihat riwayat perintah yang pernah kamu ketik",
-        "clear": "bersihkan layar",
-        "cd": "pindah folder",
-        "mkdir": "buat folder baru",
-        "rm": "hapus file/folder",
-        "mv": "pindah/rename file",
-        "cp": "salin file",
-        "cat": "baca isi file",
-        "sudo": "sudo edit <file> untuk file terproteksi",
-        "exit": "keluar dari shell",
-    }
 
 
 def is_online(cfg):
@@ -175,7 +147,7 @@ def chat(user_prompt):
     """Jawab pertanyaan lewat RydzAgent."""
     cfg = _cfg()
     if not cfg["enabled"]:
-        print("Fitur AI dimatikan (ai=false di .rydzzrc). Aktifkan dulu.")
+        print(t("ai.disabled"))
         return
     if not cfg["key"]:
         _offline_respond(cfg, user_prompt)
@@ -189,9 +161,9 @@ def chat(user_prompt):
         _stream_answer(cfg, messages)
     except RuntimeError as e:
         msg = str(e)
-        print(f"\n{config.RED}[AI Error]{config.RESET} {msg}")
+        print(t("ai.error", red=config.RED, reset=config.RESET, msg=msg))
         if "401" in msg or "403" in msg or "API key" in msg:
-            print("Cek 'ai key' di ~/.rydzz_home/.rydzzrc (dapat di https://aistudio.google.com).")
+            print(t("ai.key_hint"))
 
 
 def explain_last_error():
@@ -200,21 +172,22 @@ def explain_last_error():
     cmd = config.LAST_CMD
     err = config.LAST_ERROR
     if not err:
-        print("Belum ada error sebelumnya yang tercatat.")
+        print(t("ai.no_error"))
         return
     if not cfg["key"]:
         print(
-            f"{config.CYAN}{cfg['name']}{config.RESET} (offline): "
-            f"error perintah '{cmd}':\n    {err}\n"
-            f"  {config.DIM}(Aktifkan 'ai key' untuk analisis AI penuh.){config.RESET}"
+            t(
+                "ai.offline.error",
+                cyan=config.CYAN,
+                reset=config.RESET,
+                dim=config.DIM,
+                name=cfg["name"],
+                cmd=cmd,
+                err=err,
+            )
         )
         return
-    prompt = (
-        f"Perintah yang saya jalankan: `{cmd}`\n"
-        f"Output/error yang muncul:\n---\n{err[:2000]}\n---\n"
-        f"Kenapa ini terjadi dan bagaimana cara memperbaikinya? "
-        f"Jawab ringkas dengan langkah konkret."
-    )
+    prompt = t("ai.error_prompt", cmd=cmd, err=err[:2000])
     messages = [
         {"role": "system", "content": _system_prompt(cfg)},
         {"role": "user", "content": prompt},
@@ -223,33 +196,24 @@ def explain_last_error():
     try:
         _stream_answer(cfg, messages)
     except RuntimeError as e:
-        print(f"\n{config.RED}[AI Error]{config.RESET} {e}")
+        print(t("ai.error", red=config.RED, reset=config.RESET, msg=e))
 
 
 def tour():
     """Tur interaktif memperkenalkan fitur shell satu per satu."""
     cfg = _cfg()
-    steps = [
-        ("Navigasi File", "ls, cd, pwd, mkdir, rm, mv, cp", "ls -la"),
-        ("Pohon Folder", "lihat struktur langsung", "tree -L 2"),
-        ("Git Shortcut", "urusan git jadi singkat", "gl (log), gs (status)"),
-        ("Unduh Media", "yt-dlp & Spotify", "dl https://youtu.be/xxxx -q"),
-        ("Klone Web", "salin satu halaman jadi zip", "wclone example.com"),
-        ("QR & ASCII", "tools kecil serba guna", "qr 'halo' -o halo.png"),
-        ("Tab Completion", "tekan Tab saat mengetik", "ketik 'wcl' lalu Tab"),
-        ("Pipeline", "rantai & pipa perintah", "history | grep dl"),
-    ]
-    print(f"{config.GREEN_NEON}=== Tur Rydzz bersama {cfg['name']} ==={config.RESET}")
+    steps = i18n.tour_steps()
+    print(t("ai.tour.title", green=config.GREEN_NEON, reset=config.RESET, name=cfg["name"]))
     for i, (judul, desc, contoh) in enumerate(steps, 1):
         print(f"\n{config.CYAN}{i}. {judul}{config.RESET} — {desc}")
-        print(f"   {config.DIM}contoh: {contoh}{config.RESET}", end=" ")
+        print(f"   {config.DIM}{t('ai.tour.example')}{contoh}{config.RESET}", end=" ")
         if i < len(steps):
             try:
-                jawab = input("[Enter] lanjut, [q] berhenti: ").strip().lower()
+                jawab = input(t("ai.tour.prompt")).strip().lower()
             except (KeyboardInterrupt, EOFError):
-                print("\nTur dihentikan.")
+                print(t("ai.tour.stopped"))
                 return
             if jawab == "q":
-                print("Tur selesai. Tanya-tanya aja lewat `ai`")
+                print(t("ai.tour.done"))
                 return
-    print("\nTur selesai. Tanya-tanya aja lewat `ai`")
+    print(t("ai.tour.done"))

@@ -5,6 +5,9 @@ import subprocess
 import sys
 import time
 
+from . import i18n
+from .i18n import t
+
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 # --- 1. SETUP ENVIRONMENT & HOME KHUSUS ---
@@ -128,6 +131,7 @@ CONFIG = {
     "ai_base": "",
     "ai_nama": "RydzAgent",
     "weather_city": "jakarta",
+    "lang": "en",
     "rydzz_aliases": {},
 }
 
@@ -229,7 +233,7 @@ def load_bashrc_aliases():
                             command = command.strip().strip("'\"")
                             aliases[name] = command
         except Exception as e:
-            print(f"Gagal membaca ~/.bashrc: {e}")
+            print(t("cfg.bashrc_read_error", e=e))
 
     return aliases
 
@@ -350,4 +354,50 @@ def load_rydzzrc():
                 CONFIG["ai_nama"] = value
             elif key == "weather city":
                 CONFIG["weather_city"] = value.strip().lower()
+            elif key == "lang":
+                if i18n.set_language(value):
+                    CONFIG["lang"] = i18n.get_language()
     return
+
+
+def _persist_language(code):
+    """Tulis/update baris `lang=<kode>` di ~/.rydzz_home/.rydzzrc."""
+    path = RYDZZRC_PATH
+    lines = []
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                lines = f.read().splitlines()
+        except OSError:
+            lines = []
+    found = False
+    cleaned = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("#") or "=" not in stripped:
+            cleaned.append(line)
+            continue
+        key, _, _ = stripped.partition("=")
+        if key.strip().lower() == "lang":
+            if not found:
+                cleaned.append(f"lang={code}")
+                found = True
+            continue
+        cleaned.append(line)
+    if not found:
+        cleaned.append(f"lang={code}")
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(cleaned) + "\n")
+    except OSError:
+        pass
+
+
+def apply_language(code):
+    """Ganti bahasa saat runtime (lang -C / lang set) dan simpan ke .rydzzrc."""
+    result = i18n.set_language(code)
+    if not result:
+        return False
+    CONFIG["lang"] = result
+    _persist_language(result)
+    return True

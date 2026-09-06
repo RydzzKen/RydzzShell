@@ -1,73 +1,74 @@
 # Rydzz — Custom Interactive Shell
 
-Sebuah shell interaktif kustom yang ditulis dalam Python murni (tanpa framework
-eksternal). Dibangun sebagai proyek belajar sekaligus alat harian: navigasi
-file, manajemen git, unduh video/lagu, QR code, konversi ASCII, hingga
-pipeline perintah — semuanya dari satu terminal berwarna.
+A custom interactive shell written in pure Python (no external framework).
+Built as a learning project and a daily driver: file navigation, git
+management, media downloads, QR codes, ASCII conversion, and command
+pipelining — all from one colorful terminal.
 
-> Versi: **2.2** — history permanen, pipe ke builtin, batch/re-download di `dl`,
-> `dl list` kolom adaptif, dan unit test (pytest).
+> Version: **2.3** — multi-language (English/Indonesian), persistent history,
+> pipes into builtins, batch/re-download in `dl`, adaptive `dl list` columns,
+> and unit tests (pytest).
 
-![Versi](https://img.shields.io/badge/Versi-v2.2-2ea44f)
+![Version](https://img.shields.io/badge/Version-v2.3-2ea44f)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Dependency](https://img.shields.io/badge/Inti-Tanpa%20dependency-6f42c1)
+![Dependency](https://img.shields.io/badge/Core-Zero%20dependency-6f42c1)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%E2%80%A2%20Termux%20%E2%80%A2%20macOS%20%E2%80%A2%20Windows-brightgreen)
 ![Tests](https://img.shields.io/badge/Tests-pytest-green)
 
 ---
 
-## Fitur Utama
+## Main Features
 
-### 🐚 Inti Shell
-- Prompt berwarna kustom, banner startup, **riwayat permanen** (`history`,
-  lintas-sesi, tersimpan di `~/.rydzz_home/.rydzz_history`)
-- **Auto-cd**: ketik nama folder, langsung pindah
-- **Tab completion** pintar (perintah, alias, path) — alias `.bashrc` ikut
-  disegarkan otomatis setelah `source ~/.bashrc`
-- **Pipe** (`cmd1 | cmd2`) dan **chaining** (`cmd1 && cmd2`) — kini pipe **dapat
-  memasuki builtin** (`help | grep`, `history | grep`, `echo | tr`, dst.)
-- **Redirect** output (`>` dan `>>`)
-- **Sandbox HOME**: perintah berjalan di `~/.rydzz_home`, terpisah dari home
-  asli — kecuali `gh`/`git`/`yt-dlp` yang memakai kredensial asli Anda
-- File `.rydzzrc` (lihat template) untuk: warna prompt, banner,
-  hidden files, auto-cd, alias kustom, file terproteksi, perintah `init`
-- `sudo newpass` & `sudo edit` untuk file rahasia terproteksi
+### 🐚 Shell Core
+- Custom colored prompt, startup banner, **persistent history** (`history`,
+  cross-session, stored at `~/.rydzz_home/.rydzz_history`)
+- **Auto-cd**: type a folder name to jump right in
+- Smart **tab completion** (commands, aliases, paths) — `.bashrc` aliases are
+  refreshed automatically after `source ~/.bashrc`
+- **Pipes** (`cmd1 | cmd2`) and **chaining** (`cmd1 && cmd2`) — pipes can now
+  **enter builtins** (`help | grep`, `history | grep`, `echo | tr`, etc.)
+- Output **redirection** (`>` and `>>`)
+- **Sandbox HOME**: commands run in `~/.rydzz_home`, separate from your real
+  home — except `gh`/`git`/`yt-dlp`, which use your real credentials
+- `.rydzzrc` file (see template) for: prompt color, banner, hidden files,
+  auto-cd, custom aliases, protected files, `init` commands
+- `sudo newpass` & `sudo edit` for protected secret files
 
-### 📦 Manajemen Folder & File
-| Perintah | Fungsi |
+### 📦 File & Folder Management
+| Command | Purpose |
 | --- | --- |
-| `ls [path] [-a] [-l]` | Lihat isi folder, warna per jenis file |
-| `tree [path] [-L n]` | Struktur pohon |
-| `cd / pwd / mkdir / rm / mv / cp` | Navigasi & manipulasi |
-| `cat / nano / touch / echo` | Baca & buat file |
-| `python <file.py>` | Jalankan script Python |
+| `ls [path] [-a] [-l]` | List folder contents, color per file type |
+| `tree [path] [-L n]` | Tree structure |
+| `cd / pwd / mkdir / rm / mv / cp` | Navigation & manipulation |
+| `cat / nano / touch / echo` | Read & create files |
+| `python <file.py>` | Run Python scripts |
 
-### 🌿 Git Shortcut
+### 🌿 Git Shortcuts
 `gs` (status) · `ga` (add -A) · `gc <msg>` (commit) · `gp` (push) ·
 `gpl` (pull) · `gl` (log) · `gb` (branch) · `gd` (diff) ·
 `gco <branch>` (checkout) · `gst` (stash) · `gclone <url>` (clone)
 
-### 🌐 Unduh Media — `dl`
+### 🌐 Media Downloader — `dl`
 ```
-dl <url>                Unduh video ke ~/Downloads/rydzzMedia/<Platform>/
-dl <url1> <url2> ...    Unduh batch beberapa url sekaligus (header [i/N])
-dl <url> -q             Audio saja (mp3)
-dl <url> --redo         Unduh ulang walau file sudah ada
-dl redo                 Daftar unduhan yang bisa diulang (tanpa hafal URL)
-dl redo <nomor|url>     Unduh ulang item nomor-N dari daftar / langsung pakai URL
-dl <url> --dry          Simulasi tanpa unduh
-dl list                 Lihat file ter-unduh (kolom adaptif)
-dl list -n 5            5 unduhan terbaru
-dl list -s              Urutkan dari ukuran terbesar
+dl <url>                Download video to ~/Downloads/rydzzMedia/<Platform>/
+dl <url1> <url2> ...    Batch download multiple URLs ([i/N] header)
+dl <url> -q             Audio only (mp3)
+dl <url> --redo         Redownload even if the file already exists
+dl redo                 List downloads that can be redone (no need to remember URLs)
+dl redo <num|url>       Redownload item N from the list / directly by URL
+dl <url> --dry          Simulate without downloading
+dl list                 View downloaded files (adaptive columns)
+dl list -n 5            Last 5 downloads
+dl list -s              Sort by size (largest first)
 dl update               Update yt-dlp
 ```
-- Ditenagai `yt-dlp`, otomatis dikelompokkan per platform (logo brand dari
+- Powered by `yt-dlp`, auto-grouped per platform (brand logos from
   Simple Icons):
 
-| Platform | Domain | Konten |
+| Platform | Domain | Content |
 | --- | --- | --- |
 | <img src="https://cdn.simpleicons.org/youtube/FF0000" width="16" /> **YouTube** | `youtube.com`, `youtu.be`, `music.youtube.com` | Video / Playlist (MP3 via `-q`) |
-| <img src="https://cdn.simpleicons.org/instagram/E4405F" width="16" /> **Instagram** | `instagram.com` | Reels / Stories / Foto |
+| <img src="https://cdn.simpleicons.org/instagram/E4405F" width="16" /> **Instagram** | `instagram.com` | Reels / Stories / Photos |
 | <img src="https://cdn.simpleicons.org/tiktok/000000" width="16" /> **TikTok** | `tiktok.com`, `vt.tiktok.com` | Video |
 | <img src="https://cdn.simpleicons.org/x/000000" width="16" /> **X (Twitter)** | `x.com`, `twitter.com` | Video / GIF |
 | <img src="https://cdn.simpleicons.org/facebook/1877F2" width="16" /> **Facebook** | `facebook.com`, `fb.watch` | Reels / Video |
@@ -78,63 +79,74 @@ dl update               Update yt-dlp
 | <img src="https://cdn.simpleicons.org/soundcloud/FF3300" width="16" /> **SoundCloud** | `soundcloud.com` | Audio / MP3 |
 | <img src="https://cdn.simpleicons.org/dailymotion/0066DC" width="16" /> **Dailymotion** | `dailymotion.com` | Video |
 | <img src="https://cdn.simpleicons.org/vimeo/1AB7EA" width="16" /> **Vimeo** | `vimeo.com` | Video |
-| <img src="https://cdn.simpleicons.org/pinterest/E60023" width="16" /> **Pinterest** | `*pinterest*`, `pinterest.com` | Video / Gambar |
+| <img src="https://cdn.simpleicons.org/pinterest/E60023" width="16" /> **Pinterest** | `*pinterest*`, `pinterest.com` | Video / Images |
 | <img src="https://cdn.simpleicons.org/rumble/85C742" width="16" /> **Rumble** | `rumble.com` | Video |
 | <img src="https://cdn.simpleicons.org/odysee/EF1970" width="16" /> **Odysee** | `odysee.com` | Video |
 | **Likee** | `likee.com` | Video |
 | <img src="https://cdn.simpleicons.org/snapchat/FFFC00" width="16" /> **Snapchat** | `snapchat.com` | Video |
 | <img src="https://cdn.simpleicons.org/telegram/26A5E4" width="16" /> **Telegram** | `t.me`, `telegram.app` | Video |
-| <img src="https://cdn.simpleicons.org/discord/5865F2" width="16" /> **Discord** | `discord` (termasuk `cdn.discordapp.com`) | Clip |
+| <img src="https://cdn.simpleicons.org/discord/5865F2" width="16" /> **Discord** | `discord` (incl. `cdn.discordapp.com`) | Clip |
 | **TwitCasting** | `twitcasting.tv` | Live / VOD |
-| **Lainnya** | URL lain | Folder `Lainnya/` |
+| **Others** | Any other URL | `Others/` folder |
 
-  > **Likee** & **TwitCasting** tampil tanpa logo — ikonnya belum tersedia
-  > di Simple Icons. Sumber logo: `cdn.simpleicons.org`.
-- Progress bar realtime (persen, kecepatan, ETA)
-- **Playlist/batch**: playlist ikut terunduh (tanpa `--no-playlist`) dan bisa
-  unduh banyak URL sekaligus dalam satu perintah
-- **URL Spotify** (track/album/playlist) diproses lewat `spotdl`
-  (Spotify ber-DRM sehingga dicari di sumber audio lain)
-- Struktur folder otomatis menyesuaikan OS:
+  > **Likee** & **TwitCasting** show no logo — their icons aren't available
+  > in Simple Icons yet. Logo source: `cdn.simpleicons.org`.
+- Realtime progress bar (percent, speed, ETA)
+- **Playlist/batch**: playlists are downloaded too (no `--no-playlist`) and you
+  can download multiple URLs in a single command
+- **Spotify URLs** (track/album/playlist) go through `spotdl`
+  (Spotify is DRM-protected, so it searches other audio sources)
+- Auto OS-aware folder structure:
   `XDG_DOWNLOAD_DIR` → `user-dirs.dirs` → Termux/Android (`/sdcard/Download`)
-  → `~/Downloads` (fallback universal)
+  → `~/Downloads` (universal fallback)
 
-### 🌼 Tools Kecil
-- `qr <teks> [-o file.png|svg]` — QR code di terminal, bisa disimpan
-- `ascii enc|dec [-x|-b]` — konversi ASCII desimal/hex/biner
-- `wclone <url>` — klon halaman web (HTML/CSS/JS/gambar/font) jadi `.zip`
-  di `~/Downloads/rydzzWeb/`
+### 🌼 Small Tools
+- `qr <text> [-o file.png|svg]` — QR code in terminal, saveable to file
+- `ascii enc|dec [-x|-b]` — ASCII decimal/hex/binary conversion
+- `wclone <url>` — clone a web page (HTML/CSS/JS/images/fonts) to a `.zip`
+  in `~/Downloads/rydzzWeb/`
 
-### 🧰 Alat Harian
-- `timer <detik|mm:ss>` — countdown (contoh: `timer 90`, `timer 2:30`),
-  bel saat habis, Ctrl+C untuk batalkan
-- `stopwatch` — jam berjalan realtime, Ctrl+C untuk berhenti
-- `calc <ekspresi>` — kalkulator aman: `calc 2+2*3`, `calc sqrt(144)`;
-  dukung `+ - * / // % **` dan fungsi `math` (sqrt, sin, cos, tan, log,
+### 🌍 Multi-language
+- `lang` — show active language + usage
+- `lang list` — list available languages (`*` marks the active one)
+- `lang -C <code>` / `lang set <code>` — switch language immediately
+  (e.g. `lang -C id`)
+- `lang -C` (no argument) — interactive language picker
+- Available languages: `en` (English, default), `id` (Bahasa Indonesia)
+- Can be set permanently via `.rydzzrc`: `lang=en`
+- All output (help, banner, command feedback, AI, dl/qr/ascii, etc.) follows
+  the selected language; add a new language pack in `rydzz/langs/`
+
+### 🧰 Daily Tools
+- `timer <seconds|mm:ss>` — countdown (e.g. `timer 90`, `timer 2:30`),
+  rings when finished, Ctrl+C to cancel
+- `stopwatch` — realtime elapsed time, Ctrl+C to stop
+- `calc <expression>` — safe calculator: `calc 2+2*3`, `calc sqrt(144)`;
+  supports `+ - * / // % **` and `math` functions (sqrt, sin, cos, tan, log,
   log10, exp, floor, ceil, abs, round, pow, pi, e)
-- `weather [kota]` — cuaca dari wttr.in (tanpa API key); default kota dari
-  `.rydzzrc` (`weather city=jakarta`), contoh: `weather bandung`
+- `weather [city]` — weather from wttr.in (no API key); default city from
+  `.rydzzrc` (`weather city=jakarta`), e.g. `weather bandung`
 
-### 🤖 AI Pemandu — RydzAgent
-- `ai <pertanyaan>` — tanya apa saja (Gemini free, Bahasa Indonesia)
-- `ai tour` — tur interaktif mengenal fitur shell
-- `ai error` — jelaskan error perintah terakhir (manual, privasi aman)
-- `Command Not Found: xxx` → otomatis disarankan command terdekat (offline)
-- Konfigurasi `.rydzzrc`: `ai=`, `ai key=`, `ai model=`, `ai base=`, `ai nama=`
-  (key gratis di https://aistudio.google.com/apikey; tanpa key tetap jalan
-  sebagai pemandu offline)
+### 🤖 AI Guide — RydzAgent
+- `ai <question>` — ask anything (free Gemini, follows the shell language)
+- `ai tour` — interactive tour of shell features
+- `ai error` — explain the last command's error (manual, privacy-safe)
+- `Command Not Found: xxx` → nearest command automatically suggested (offline)
+- `.rydzzrc` config: `ai=`, `ai key=`, `ai model=`, `ai base=`, `ai nama=`
+  (free key at https://aistudio.google.com/apikey; without a key it still
+  works as an offline guide)
 
-### 🔌 Integrasi Sistem
+### 🔌 System Integration
 `git`, `curl`, `wget`, `ssh`/`sshd`, `ping`, `gh`, `pip`, `node`, `df`,
 `free`, `ps`, `htop`, `neofetch`/`fastfetch`, `whoami`, `passwd`,
-`source ~/.bashrc` untuk alias asli, plus perintah sistem lainnya.
+`source ~/.bashrc` for real aliases, plus other system commands.
 
 ---
 
-## Instalasi
+## Installation
 
 ```bash
-# Prasyarat: Python 3.10+ , lalu (opsional) tool download:
+# Prerequisites: Python 3.10+; optional download tools:
 pip3 install -U yt-dlp segno spotdl
 
 git clone https://github.com/RydzzKen/Rydzz.git
@@ -142,57 +154,60 @@ cd Rydzz
 python3 CLI.py
 ```
 
-> Library eksternal hanya dibutuhkan untuk fitur `dl`/`qr`; inti shell
-> berjalan tanpa satu dependency pun.
+> External libraries are only needed for the `dl`/`qr` features; the shell
+> core runs with zero dependencies.
 
-## Konfigurasi `.rydzzrc`
+## `.rydzzrc` Configuration
 
-Salin `rydzzrc.template` ke `~/.rydzz_home/.rydzzrc`. Direktif yang tersedia:
+Copy `rydzzrc.template` to `~/.rydzz_home/.rydzzrc`. Available directives:
 
-| Direktif | Contoh | Fungsi |
+| Directive | Example | Purpose |
 | --- | --- | --- |
-| `prompt color=` | `prompt color=purple` | Warna prompt (green, cyan, ...) |
-| `banner=` | `banner=false` | Tampilkan/abaikan banner startup |
-| `history=` | `history=false` | Matikan riwayat permanen antar-sesi |
-| `hidden=` | `hidden=true` | `ls` menampilkan file hidden default |
-| `auto_cd=` | `auto_cd=false` | Nonaktifkan auto-cd |
-| `alias=` | `alias=cl=clear` | Alias kustom |
-| `protected=add:` | `protected=add:rahasia.txt` | Proteksi file dari hapus/edit |
-| `init=` | `init=clear` | Perintah otomatis saat startup |
-| `weather city=` | `weather city=bandung` | Kota default untuk `weather` |
+| `prompt color=` | `prompt color=purple` | Prompt color (green, cyan, ...) |
+| `banner=` | `banner=false` | Show/ignore the startup banner |
+| `history=` | `history=false` | Disable persistent cross-session history |
+| `hidden=` | `hidden=true` | `ls` shows hidden files by default |
+| `auto_cd=` | `auto_cd=false` | Disable auto-cd |
+| `alias=` | `alias=cl=clear` | Custom aliases |
+| `protected=add:` | `protected=add:secret.txt` | Protect files from delete/edit |
+| `init=` | `init=clear` | Command(s) to run automatically at startup |
+| `weather city=` | `weather city=bandung` | Default city for `weather` |
+| `lang=` | `lang=id` | Shell UI language (`en` default, `id`, `en`) |
 
 ---
 
-## Struktur Proyek
+## Project Structure
 
 ```
 Rydzz/
 ├── CLI.py                # Entry point (python3 CLI.py)
-├── pytest.ini            # Konfigurasi tes (testpaths)
-├── tests/                # Unit test (pytest)
-├── rydzzrc.template      # Template konfigurasi ~/.rydzzrc
+├── pytest.ini            # Test configuration (testpaths)
+├── tests/                # Unit tests (pytest)
+├── rydzzrc.template      # ~/.rydzzrc config template
 └── rydzz/
-    ├── config.py         # State global: warna, protected files, loader rydzzrc, history
-    ├── commands.py       # ls -a/-l, tree, git shortcut, capture_ls
+    ├── config.py         # Global state: colors, protected files, rydzzrc loader, history
+    ├── commands.py       # ls -a/-l, tree, git shortcuts, capture_ls
     ├── completions.py    # Tab completion (readline)
-    ├── pipe.py           # Pipeline & redirect
-    ├── shell.py          # Loop utama REPL, dispatch, help
+    ├── pipe.py           # Pipeline & redirection
+    ├── shell.py          # Main REPL loop, dispatch, help
     ├── tools.py          # dl (yt-dlp/spotdl), qr (segno), ascii
-    ├── webclone.py       # wclone — klon halaman web → zip
-    ├── ai.py             # RydzAgent — AI pemandu (Gemini, opsional)
-    └── gadgets.py        # timer, stopwatch, calc, weather
+    ├── webclone.py       # wclone — web page cloner → zip
+    ├── ai.py             # RydzAgent — AI guide (Gemini, optional)
+    ├── gadgets.py        # timer, stopwatch, calc, weather
+    ├── i18n.py           # Multi-language support (translations, lang)
+    └── langs/            # Language packs (id.py, en.py, ...)
 ```
 
 ## Testing
 
-Unit test ditulis dengan **pytest** (dependency dev saja — pemakaian shell tetap
-zero-dependency). Untuk menjalankan:
+Unit tests are written with **pytest** (dev-only dependency — daily shell use
+stays zero-dependency). To run:
 
 ```bash
 pip3 install pytest
 python3 -m pytest
 ```
 
-## Lisensi
+## License
 
-Proyek belajar pribadi — silakan dipakai dan dimodifikasi.
+Personal learning project — feel free to use and modify.

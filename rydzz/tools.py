@@ -6,6 +6,7 @@ import time
 from urllib.parse import urlparse
 
 from . import config
+from .i18n import t
 
 
 def _default_download_dir():
@@ -224,7 +225,7 @@ def download_video(url, audio_only=False, dry_run=False, force=False):
     """
     yt_dlp = shutil.which("yt-dlp")
     if not yt_dlp:
-        print("yt-dlp tidak ditemukan. Install dulu: pip3 install -U yt-dlp")
+        print(t("dl.ytdlp_missing"))
         return False
 
     platform = _platform_dir(url)
@@ -248,14 +249,14 @@ def download_video(url, audio_only=False, dry_run=False, force=False):
         cmd += ["-x", "--audio-format", "mp3"]
     cmd.append(url)
 
-    print(f"Memproses video dari {platform_label(platform)}...")
+    print(t("dl.processing", platform=platform_label(platform)))
     rc = config.run_system_cmd_real_home(" ".join(f'"{c}"' for c in cmd))
     if rc != 0:
-        print("Download gagal (cek error di atas).")
+        print(t("dl.failed"))
         return False
     if not dry_run:
         _record_download(url, platform)
-        print(f"Hasil disimpan di: {outdir}")
+        print(t("dl.saved_to", outdir=outdir))
     return True
 
 
@@ -267,14 +268,12 @@ def _download_spotify(url, outdir, dry_run, yt_dlp):
     """
     spotdl = shutil.which("spotdl")
     if not spotdl:
-        print(
-            "spotdl tidak ditemukan. Install dulu: pip3 install -U spotdl"
-        )
+        print(t("dl.spotdl_missing"))
         return False
 
-    print("Spotify ber-DRM — diproses lewat spotdl (cari di sumber audio).")
+    print(t("dl.spotify_drm"))
     if dry_run:
-        print(f"[dry-run] spotdl → {url}")
+        print(t("dl.dry_run", url=url))
         return True
 
     import tempfile
@@ -300,14 +299,14 @@ def _download_spotify(url, outdir, dry_run, yt_dlp):
                 _sh.move(src, dst)
                 moved += 1
             except Exception as e:
-                print(f"Gagal memindahkan {f}: {e}")
+                print(t("dl.move_failed", f=f, e=e))
     _cleanup_tmp(tmpdir)
 
     if moved:
         _record_download(url, "Spotify")
-        print(f"Berhasil: {moved} lagu disimpan di {outdir}")
+        print(t("dl.spotify_ok", n=moved, outdir=outdir))
     else:
-        print("Tidak ada lagu yang terunduh (cek error spotdl di atas).")
+        print(t("dl.spotify_none"))
     return True
 
 
@@ -336,7 +335,13 @@ def download_batch(urls, audio_only=False, dry_run=False, force=False):
     total = len(urls)
     ok = failed = 0
     print(
-        f"{config.BOLD}{config.CYAN}Download Batch ({total} item){config.RESET}"
+        t(
+            "dl.batch_title",
+            bold=config.BOLD,
+            cyan=config.CYAN,
+            reset=config.RESET,
+            total=total,
+        )
     )
     for i, url in enumerate(urls, 1):
         platform = _platform_dir(url)
@@ -348,7 +353,14 @@ def download_batch(urls, audio_only=False, dry_run=False, force=False):
         try:
             result = download_video(url, audio_only, dry_run, force)
         except KeyboardInterrupt:
-            print(f"{config.RED}  [GAGAL]{config.RESET} Dibatalkan pada item {i}.")
+            print(
+                t(
+                    "dl.batch_cancel",
+                    red=config.RED,
+                    reset=config.RESET,
+                    i=i,
+                )
+            )
             break
         if result:
             ok += 1
@@ -359,13 +371,23 @@ def download_batch(urls, audio_only=False, dry_run=False, force=False):
     total_gagal = failed
     if total_gagal:
         print(
-            f"{config.RED}[GAGAL]{config.RESET} {total_gagal} item. "
-            f"{config.GREEN_NEON}[SUKSES]{config.RESET} {total_sukses} item."
+            t(
+                "dl.summary",
+                red=config.RED,
+                green=config.GREEN_NEON,
+                reset=config.RESET,
+                failed=total_gagal,
+                ok=total_sukses,
+            )
         )
     else:
         print(
-            f"{config.GREEN_NEON}[SUKSES]{config.RESET} "
-            f"Semua {total_sukses} item berhasil."
+            t(
+                "dl.all_success",
+                green=config.GREEN_NEON,
+                reset=config.RESET,
+                total=total_sukses,
+            )
         )
     return total_gagal == 0
 
@@ -376,16 +398,16 @@ def redownload(args):
 
     if not args:
         if not entries:
-            print("Belum ada catatan unduhan. Gunakan: dl <url> --redo")
+            print(t("dl.how_redo"))
             return False
-        print("Daftar unduhan (dl redo <nomor> untuk unduh ulang):")
+        print(t("dl.redo_list_title"))
         for i, e in enumerate(entries, 1):
             print(
                 f"  {i:>3}. {config.MAGENTA}{platform_label(e.get('platform', '?'))}{config.RESET}"
                 f"  {_url_display(e.get('url', ''), 60)}  "
                 f"{config.DIM}{e.get('time', '')}{config.RESET}"
             )
-        print("  (langsung pakai URL: dl redo <url>)")
+        print(t("dl.redo_use_url"))
         return True
 
     targets = []
@@ -395,7 +417,7 @@ def redownload(args):
             if 1 <= i <= len(entries):
                 targets.append(entries[i - 1]["url"])
             else:
-                print(f"Nomor {a} tidak ada. Cek: dl redo")
+                print(t("dl.redo_num_missing", n=a))
                 return False
         else:
             targets.append(a)
@@ -425,14 +447,14 @@ def list_downloads(opts=None):
         elif o in ("-s", "--sort-size"):
             sort_size = True
         elif o in ("-h", "--help"):
-            print("Guna: dl list [-n <jumlah>] [-s]")
-            print("  -n <jumlah>  hanya item terbaru (default: semua)")
-            print("  -s           urutkan dari ukuran terbesar")
+            print(t("dl.list_usage"))
+            print(t("dl.list_opt_n"))
+            print(t("dl.list_opt_s"))
             return
         i += 1
 
     if not os.path.exists(DL_ROOT):
-        print(f"Belum ada download. Folder: {DL_ROOT}")
+        print(t("dl.none_yet", dir=DL_ROOT))
         return
 
     platforms = sorted(
@@ -456,7 +478,7 @@ def list_downloads(opts=None):
             entries.append((platform, f, size, mtime))
 
     if not entries:
-        print(f"Folder {DL_ROOT} kosong.")
+        print(t("dl.folder_empty", dir=DL_ROOT))
         return
 
     if sort_size:
@@ -468,8 +490,13 @@ def list_downloads(opts=None):
 
     total_size = sum(e[2] for e in entries)
     print(
-        f"{config.PURPLE}rydzzMedia{config.RESET} · {len(entries)} file "
-        f"· {_human_size(total_size)}"
+        t(
+            "dl.summary_line",
+            purple=config.PURPLE,
+            reset=config.RESET,
+            n=len(entries),
+            size=_human_size(total_size),
+        )
     )
 
     try:
@@ -480,7 +507,7 @@ def list_downloads(opts=None):
     name_width = min(name_width, max(12, term_width - 26))
     fmt = f"  {{:<{name_width}}}  {{:>9}}  {{}}"
 
-    print(fmt.format("Nama", "Ukuran", "Platform"))
+    print(fmt.format(t("dl.col_name"), t("dl.col_size"), t("dl.col_platform")))
     print("  " + "-" * max(12, term_width - 2))
 
     for platform, fname, size, _mtime in entries:
@@ -523,13 +550,11 @@ def gen_qr(text, out_file=None):
     try:
         import segno
     except ImportError:
-        print(
-            "Library segno belum ada. Install dulu: pip3 install segno"
-        )
+        print(t("qr.segno_missing"))
         return False
 
     if not text:
-        print("Guna: qr <teks> [-o file.png|file.svg]")
+        print(t("qr.usage"))
         return False
 
     qr = segno.make_qr(text)
@@ -550,7 +575,7 @@ def gen_qr(text, out_file=None):
             qr.save(save_path, kind="svg")
         else:
             qr.save(save_path, kind="png")
-        print(f"QR disimpan di: {save_path}")
+        print(t("qr.saved", path=save_path))
     return True
 
 
@@ -586,7 +611,7 @@ def ascii_decode(codes, base=10):
         try:
             out.append(chr(int(p, base)))
         except ValueError:
-            return f"Error: '{p}' bukan angka basis {base}"
+            return t("ascii.decode_invalid", p=p, base=base)
         except OverflowError:
-            return f"Error: '{p}' di luar rentang"
+            return t("ascii.decode_range", p=p)
     return "".join(out)

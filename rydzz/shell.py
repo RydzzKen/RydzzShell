@@ -11,7 +11,8 @@ try:
 except ImportError:
     readline = None
 
-from . import ai, commands, completions, config, gadgets, pipe, tools, webclone
+from . import ai, commands, completions, config, gadgets, i18n, pipe, tools, webclone
+from .i18n import t
 
 
 class _OutputCapturer:
@@ -37,21 +38,14 @@ class _OutputCapturer:
 def handle_dl(arg):
     args = arg.split() if arg else []
     if not args:
-        print(
-            "Guna: dl <url1> <url2> ... [-q] | dl list [opsi] | dl update"
-        )
-        print("  dl <url> --redo       - unduh ulang walau file sudah ada")
-        print("  dl list -n 5          - 5 unduhan terbaru")
-        print("  dl list -s            - urutkan dari ukuran terbesar")
-        print("  dl redo               - daftar unduhan untuk diulang")
-        print("  dl redo <nomor|url>   - unduh ulang item dari daftar")
+        print(t("dl.usage_help"))
         return
 
     if args[0] == "list":
         tools.list_downloads(args[1:])
         return
     if args[0] == "update":
-        print("Meng-update yt-dlp...")
+        print(t("dl.updating"))
         tools.update_ytdlp()
         return
     if args[0] == "redo":
@@ -63,7 +57,7 @@ def handle_dl(arg):
     force = "--redo" in args or "--force" in args
     urls = [a for a in args if not a.startswith("-")]
     if not urls:
-        print("Guna: dl <url1> <url2> ... [-q]")
+        print(t("dl.usage_simple"))
         return
     tools.download_batch(
         urls, audio_only=audio_only, dry_run=dry_run, force=force
@@ -92,15 +86,13 @@ def handle_qr(arg):
 def handle_ascii(arg):
     args = arg.split() if arg else []
     if not args or args[0] not in ("enc", "encode", "dec", "decode"):
-        print(
-            "Guna: ascii enc|-x|-b \"teks\"  |  ascii dec [-x|-b] \"angka ...\""
-        )
+        print(t("ascii.usage"))
         return
 
     mode = args[0]
     base, label, flag_remaining = tools._parse_ascii_flags(args[1:])
     if not flag_remaining:
-        print(f"ASCII mode butuh input. Basis: {label}")
+        print(t("ascii.need_input", base=base))
         return
 
     input_text = " ".join(flag_remaining).strip("\"'")
@@ -121,79 +113,17 @@ def show_banner():
  |  _  /     \\___ \\| '_ \\ / _ \\ |
  | | \\ \\ _   ____) | | | |  __/ |
  |_|  \\_(_) |_____/|_| |_|\\___|_|
-{config.CYAN}    --- Custom Interactive Shell v2.2 ---{config.RESET}
-{config.YELLOW}  Ketik 'help' atau '?' untuk daftar perintah.{config.RESET}
+{config.CYAN}    --- Custom Interactive Shell v2.3 ---{config.RESET}
+{config.YELLOW}  {t('banner.hint')}{config.RESET}
 """
     print(banner)
 
 
 def show_help():
     print("=" * 65)
-    print("                  DAFTAR PERINTAH RYDZZ SHELL")
+    print(t("help.title"))
     print("=" * 65)
-    print("• ls [path] [-a] [-l]      - Lihat isi folder (-a hidden, -l detail)")
-    print("• tree [path] [-L n]       - Tampilkan struktur folder dalam pohon")
-    print("• cd [folder]              - Pindah folder (cd doang = balik ke Home)")
-    print("• pwd                      - Menampilkan path lokasi direktori aktif")
-    print("• mkdir <folder>           - Membuat folder baru")
-    print("• rm <file/folder>         - Menghapus file atau folder")
-    print("• mv <asal> <tujuan>       - Pindah atau rename file/folder")
-    print("• cp <asal> <tujuan>       - Menyalin file atau folder")
-    print("• cat / nano <file>        - Baca / edit file teks")
-    print("• touch <file>             - Membuat/update timestamp file")
-    print("• echo <teks>              - Mencetak teks")
-    print("• history [-c]               - Riwayat perintah (permanen antar-sesi; -c hapus)")
-    print("• python / py <file.py>    - Menjalankan script Python")
-    print("• pip / node               - Pipeline Python & Node")
-    print("• git / curl / wget        - Download & Network tools")
-    print("• ssh / sshd / ping        - Remote & Connectivity")
-    print("• whoami / passwd          - Informasi user & ubah password")
-    print("• df / free / ps / htop    - Informasi memori & sistem")
-    print("• neofetch / fastfetch     - Tampilan sistem aesthetic")
-    print("• sudo edit <file>         - Akses terproteksi untuk edit file rahasia")
-    print("• sudo newpass             - Mengubah password Sudo khusus secara permanen")
-    print("• source ~/.bashrc         - Reload alias dari ~/.bashrc")
-    print("• alias / aliases          - Menampilkan alias yang dibaca dari ~/.bashrc")
-    print("• TG                       - Membuka Text Generator")
-    print("• dl <url>                 - Unduh video/lagu ke download/rydzzMedia")
-    print("    dl <url1> <url2> ...     -   unduh batch beberapa url sekaligus")
-    print("    dl <url> -q              -   audio saja (mp3)")
-    print("    dl <url> --redo          -   unduh ulang walau file sudah ada")
-    print("    dl redo                  -   daftar unduhan yang bisa diulang")
-    print("    dl redo <nomor|url>      -   unduh ulang dari daftar")
-    print("    dl list                  -   lihat file ter-unduh")
-    print("    dl list -n 5             -   5 unduhan terbaru")
-    print("    dl list -s               -   urutkan dari ukuran terbesar")
-    print("    dl update                -   update yt-dlp")
-    print("• qr <teks>                - Tampilkan QR di terminal")
-    print("    qr <teks> -o file.png  -   simpan QR (png/svg)")
-    print(
-        "• ascii enc|dec [-x|-b]     - Konversi ASCII (desimal/hex/biner)"
-    )
-    print("    ascii enc \"kata\"          -   kata → kode")
-    print("    ascii dec \"104 101 ...\"   -   kode → kata")
-    print("• wclone <url> (alias wcode) - Klon halaman web -> zip (HTML/CSS/JS)")
-    print("• ai <tanya>                - Tanya AI Pemandu RydzAgent")
-    print("    ai tour                  -   tur interaktif fitur shell")
-    print("    ai error                 -   jelaskan error perintah terakhir")
-    print("• timer <detik|mm:ss>      - Countdown (Ctrl+C batalkan)")
-    print("• stopwatch                - Stopwatch (Ctrl+C berhenti)")
-    print("• calc <ekspresi>          - Kalkulator (2+2*3, sqrt(144), ...)")
-    print("• weather [kota]           - Cuaca kota (default: jakarta)")
-    print("• clear                    - Membersihkan layar")
-    print("• exit                     - Keluar dari shell")
-    print("• <cmd1> && <cmd2>         - Menjalankan 2 perintah sekaligus")
-    print("• cmd1 | cmd2              - Pipe output cmd1 ke cmd2")
-    print("    (bisa dipipe ke builtin: help | grep, history | grep, ...)")
-    print("")
-    print("--- SHORTCUT GIT ---")
-    print("• gs=status ga=add gl=log gb=branch gd=diff")
-    print("• gp=push gpl=pull gst=stash gc=<msg> gco=<branch> gclone=<url>")
-    print("")
-    print("--- FITUR LANJUTAN ---")
-    print("• Tab completion            - Lengkapi command/file otomatis (Tab)")
-    print("• Auto-cd: ketik nama folder - Otomatis pindah ke folder itu")
-    print("• ~/.rydzzrc                - Konfigurasi prompt, banner, hidden, init")
+    print(t("help.body"))
     print("=" * 65)
 
 
@@ -202,10 +132,7 @@ def handle_ai(arg):
     """Perintah AI Pemandu (RydzAgent): ai <tanya> | ai tour | ai error."""
     arg = arg.strip()
     if not arg:
-        print("Guna: ai <pertanyaan> | ai tour | ai error")
-        print("  ai <tanya>   - tanya RydzAgent tentang apa saja")
-        print("  ai tour      - tur interaktif mengenal fitur shell")
-        print("  ai error     - jelaskan error perintah terakhir")
+        print(t("ai.usage_help"))
         return
     low = arg.lower()
     if low == "tour":
@@ -225,20 +152,20 @@ def text_generator():
     while True:
         config.clear_screen()
         print("=" * 42)
-        print("         Text Generator")
+        print(t("tg.title"))
         print("=" * 42 + "\n")
-        print("Ketik 'exit' pada teks untuk keluar!\n")
+        print(t("tg.exit") + "\n")
         try:
-            text = input("Masukkan Kata: ")
+            text = input(t("tg.input_text"))
             if text.lower() == "exit":
                 break
-            jumlah = int(input("Masukkan Jumlah: "))
+            jumlah = int(input(t("tg.input_count")))
             for i in range(1, jumlah + 1):
                 print(f"{i}. {text}")
-            input("\nTekan Enter Untuk Lanjut...")
+            input(t("tg.press_enter"))
         except ValueError:
-            print("Jumlah Harus Berupa Angka!!")
-            input("\nTekan Enter Untuk Lanjut...")
+            print(t("tg.count_error"))
+            input(t("tg.press_enter"))
         except KeyboardInterrupt:
             print("\n^C")
             break
@@ -249,22 +176,22 @@ def handle_sudo(single_command):
     # 1. Ganti Password Sudo (sudo newpass)
     if single_command == "sudo newpass":
         try:
-            old_pass = getpass.getpass("Masukkan Sudo Password Lama: ")
+            old_pass = getpass.getpass(t("sudo.old_pass"))
             if old_pass == config.CUSTOM_SUDO_PASS:
-                new_pass = getpass.getpass("Masukkan Sudo Password Baru: ")
-                confirm_pass = getpass.getpass("Konfirmasi Password Baru: ")
+                new_pass = getpass.getpass(t("sudo.new_pass"))
+                confirm_pass = getpass.getpass(t("sudo.confirm_pass"))
                 if new_pass == confirm_pass:
                     if new_pass.strip():
                         config.CUSTOM_SUDO_PASS = new_pass.strip()
                         with open(config.PASS_FILE_PATH, "w") as f:
                             f.write(config.CUSTOM_SUDO_PASS)
-                        print("\n[SUCCESS] Sudo Password berhasil diubah!")
+                        print(t("sudo.changed"))
                     else:
-                        print("\n[ERROR] Password tidak boleh kosong!")
+                        print(t("sudo.empty_pass"))
                 else:
-                    print("\n[ERROR] Konfirmasi password tidak cocok!")
+                    print(t("sudo.confirm_mismatch"))
             else:
-                print("\n[ERROR] Password lama salah!")
+                print(t("sudo.wrong_old"))
         except KeyboardInterrupt:
             print("\n^C")
             config.reset_terminal()
@@ -275,17 +202,17 @@ def handle_sudo(single_command):
         target_file = single_command.replace("sudo edit ", "", 1).strip()
         if target_file:
             try:
-                pass_input = getpass.getpass("Masukkan Custom Sudo Password: ")
+                pass_input = getpass.getpass(t("sudo.edit_pass"))
                 if pass_input == config.CUSTOM_SUDO_PASS:
-                    print("\nAkses Diterima!")
+                    print(t("sudo.access_granted"))
                     config.run_system_cmd(f'nano "{target_file}"')
                 else:
-                    print("\nAkses Ditolak: Password Salah!")
+                    print(t("sudo.access_denied"))
             except KeyboardInterrupt:
                 print("\n^C")
                 config.reset_terminal()
         else:
-            print("Guna: sudo edit <nama_file>")
+            print(t("sudo.usage_edit"))
         return True
 
     # 3. Perilaku Sudo Biasa
@@ -295,7 +222,7 @@ def handle_sudo(single_command):
         config.run_system_cmd(single_command)
     else:
         try:
-            sudo_pass = getpass.getpass("Rydzz Password: ")
+            sudo_pass = getpass.getpass(t("sudo.password_prompt"))
             if sudo_pass == config.CUSTOM_SUDO_PASS:
                 print("\n[sudo] password accepted.")
                 if single_command == "sudo apt update":
@@ -316,7 +243,7 @@ def handle_sudo(single_command):
                     print("\nAll packages are up to date.")
                 else:
                     cmd_tanpa_sudo = single_command.replace("sudo ", "", 1)
-                    print(f"Executing with fake-root: {cmd_tanpa_sudo}")
+                    print(t("sudo.exec_fake", cmd=cmd_tanpa_sudo))
                     config.run_system_cmd(cmd_tanpa_sudo)
             else:
                 print("sudo: 1 incorrect password attempt")
@@ -329,7 +256,7 @@ def handle_sudo(single_command):
 # Builtin yang boleh dipipe (agar `help | grep`, `history | grep`, dst. jalan)
 PIPE_BUILTINS = {
     "help", "?", "list", "history", "echo", "alias", "aliases",
-    "tree", "pwd", "cat", "calc", "ascii", "weather", "ai",
+    "tree", "pwd", "cat", "calc", "ascii", "weather", "ai", "lang",
 }
 
 
@@ -394,7 +321,7 @@ def handle_command(single_command):
             with open(redirect_file, mode) as f:
                 f.write(buffer.getvalue())
         except Exception as e:
-            print(f"Redirect gagal: {e}", file=old_stdout)
+            print(t("redirect.failed", e=e), file=old_stdout)
         return
 
     parts = single_command.split(maxsplit=1)
@@ -447,22 +374,22 @@ def handle_command(single_command):
             src, dst = args[0], args[1]
             if os.path.exists(src):
                 if dst.endswith("/") and not os.path.exists(dst):
-                    print(f"Error: Folder tujuan '{dst}' tidak ditemukan!")
+                    print(t("err.mv_dest_dir", dst=dst))
                     return
                 try:
                     shutil.move(src, dst)
                     if os.path.isdir(dst):
-                        print(f"'{src}' berhasil dipindahkan ke folder '{dst}'.")
+                        print(t("ok.mv_dir", src=src, dst=dst))
                     else:
-                        print(f"'{src}' berhasil di-rename menjadi '{dst}'.")
+                        print(t("ok.mv_rename", src=src, dst=dst))
                 except Exception as e:
-                    print(f"Gagal memindahkan: {e}")
+                    print(t("err.mv_fail", e=e))
                     return
             else:
-                print(f"File/Folder asal '{src}' tidak ditemukan!")
+                print(t("err.src_not_found", src=src))
                 return
         else:
-            print("Guna: mv <asal> <tujuan>")
+            print(t("usage.mv"))
 
     elif cmd == "cp":
         args = arg.split(maxsplit=1)
@@ -474,28 +401,28 @@ def handle_command(single_command):
                         shutil.copytree(src, dst)
                     else:
                         shutil.copy2(src, dst)
-                    print(f"'{src}' berhasil disalin ke '{dst}'.")
+                    print(t("ok.cp", src=src, dst=dst))
                 except Exception as e:
-                    print(f"Gagal menyalin: {e}")
+                    print(t("err.cp_fail", e=e))
                     return
             else:
-                print(f"File/Folder asal '{src}' tidak ditemukan!")
+                print(t("err.src_not_found", src=src))
                 return
         else:
-            print("Guna: cp <asal> <tujuan>")
+            print(t("usage.cp"))
 
     elif cmd == "cd":
         if arg:
             try:
                 os.chdir(arg)
             except FileNotFoundError:
-                print(f"Folder '{arg}' tidak ditemukan!")
+                print(t("err.cd_not_found", arg=arg))
                 return
             except NotADirectoryError:
-                print(f"'{arg}' bukan sebuah folder!")
+                print(t("err.cd_not_dir", arg=arg))
                 return
             except Exception as e:
-                print(f"Gagal pindah folder: {e}")
+                print(t("err.cd_fail", e=e))
                 return
         else:
             os.chdir(config.CUSTOM_HOME)
@@ -504,14 +431,14 @@ def handle_command(single_command):
         if arg:
             try:
                 os.mkdir(arg)
-                print(f"Folder '{arg}' berhasil dibuat.")
+                print(t("ok.mkdir", arg=arg))
             except FileExistsError:
-                print(f"Folder '{arg}' sudah ada!")
+                print(t("err.mkdir_exists", arg=arg))
             except Exception as e:
-                print(f"Gagal membuat folder: {e}")
+                print(t("err.mkdir_fail", e=e))
                 return
         else:
-            print("Guna: mkdir <nama_folder>")
+            print(t("usage.mkdir"))
 
     elif cmd in ["rm", "hapus"]:
         if arg:
@@ -519,57 +446,53 @@ def handle_command(single_command):
                 try:
                     if os.path.isdir(arg):
                         shutil.rmtree(arg)
-                        print(f"Folder '{arg}' berhasil dihapus.")
+                        print(t("ok.rm_dir", arg=arg))
                     else:
                         os.remove(arg)
-                        print(f"File '{arg}' berhasil dihapus.")
+                        print(t("ok.rm_file", arg=arg))
                 except Exception as e:
-                    print(f"Gagal menghapus: {e}")
+                    print(t("err.rm_fail", e=e))
                     return
             else:
-                print("File/Folder tidak ditemukan!")
+                print(t("err.not_found_generic"))
                 return
         else:
-            print("Guna: rm <nama_file_atau_folder>")
+            print(t("usage.rm"))
 
     elif cmd == "touch":
         if arg:
             try:
                 open(arg, "a").close()
-                print(f"File '{arg}' berhasil dibuat/diperbarui.")
+                print(t("ok.touch", arg=arg))
             except Exception as e:
-                print(f"Gagal membuat file: {e}")
+                print(t("err.touch_fail", e=e))
         else:
-            print("Guna: touch <nama_file>")
+            print(t("usage.touch"))
 
     elif cmd == "cat":
         if arg:
             if os.path.exists(arg) and os.path.isfile(arg):
                 if config.is_protected(arg):
-                    print(
-                        "Akses Ditolak: Gunakan 'sudo edit' untuk mengakses file terproteksi."
-                    )
+                    print(t("err.protected_access"))
                 else:
                     try:
                         with open(arg, "r") as f:
                             print(f.read())
                     except Exception as e:
-                        print(f"Gagal membaca file: {e}")
+                        print(t("err.cat_read", e=e))
             else:
-                print(f"File '{arg}' tidak ditemukan!")
+                print(t("err.cat_not_found", arg=arg))
         else:
-            print("Guna: cat <nama_file>")
+            print(t("usage.cat"))
 
     elif cmd == "nano":
         if arg:
             if config.is_protected(arg):
-                print(
-                    "Akses Ditolak: Gunakan 'sudo edit' untuk mengakses file terproteksi."
-                )
+                print(t("err.protected_access"))
             else:
                 config.run_system_cmd(f'nano "{arg}"')
         else:
-            print("Guna: nano <nama_file>")
+            print(t("usage.nano"))
 
     elif cmd == "history":
         args = arg.split()
@@ -581,23 +504,26 @@ def handle_command(single_command):
             except Exception:
                 pass
             print(
-                f"{config.GREEN_NEON}[SUKSES]{config.RESET} "
-                "Riwayat perintah dibersihkan."
+                t(
+                    "history.cleared",
+                    green=config.GREEN_NEON,
+                    reset=config.RESET,
+                )
             )
             return
         history = config.COMMAND_HISTORY
         if not history:
-            print("Belum ada riwayat perintah.")
+            print(t("history.empty"))
             return
         total = len(history)
-        print(f"Daftar Riwayat Perintah ({total}):")
+        print(t("history.title", total=total))
         last = total - 1
         for i, h_cmd in enumerate(history):
             line = f"  {config.DIM}{i + 1:>4}{config.RESET}  {h_cmd}"
             if i == last:
                 line = f"  {config.DIM}{i + 1:>4}{config.RESET}  {config.CYAN}{h_cmd}{config.RESET}"
             print(line)
-        print("  (perintah terakhir ditandai cyan — untuk hapus: history -c)")
+        print(t("history.hint"))
 
     elif cmd == "echo":
         print(arg)
@@ -606,7 +532,7 @@ def handle_command(single_command):
         if arg:
             config.run_system_cmd(f'python3 "{arg}"')
         else:
-            print("Guna: python <nama_file.py>")
+            print(t("usage.python"))
 
     elif cmd in ["pip", "pip3"]:
         config.run_system_cmd(single_command)
@@ -615,12 +541,12 @@ def handle_command(single_command):
         if arg:
             config.run_system_cmd(f'node "{arg}"')
         else:
-            print("Guna: node <nama_file.js>")
+            print(t("usage.node"))
 
     # --- SHORTCUT GIT (dicek sebelum passthrough git) ---
     elif cmd in ["gs", "ga", "gl", "gb", "gd", "gp", "gpl", "gst", "gc", "gco", "gclone"]:
         if not commands.run_git_shortcut(cmd, arg):
-            print(f"Command Not Found: {cmd}")
+            print(t("err.cmd_not_found", cmd=cmd))
 
     elif cmd in ["gh", "git"]:
         # Pakai HOME asli agar kredensial gh/git di terminal utama terbawa
@@ -642,13 +568,13 @@ def handle_command(single_command):
         if arg in ("~/.bashrc", os.path.expanduser("~/.bashrc")):
             config.USER_ALIASES = config.load_bashrc_aliases()
             completions.refresh()
-            print("Berhasil meng-update alias dari ~/.bashrc!")
+            print(t("source.ok_bashrc"))
         elif arg in ("~/.rydzzrc", config.RYDZZRC_PATH):
             config.load_rydzzrc()
             completions.refresh()
-            print("Berhasil meng-update konfigurasi dari ~/.rydzzrc!")
+            print(t("source.ok_rydzzrc"))
         else:
-            print("Guna: source ~/.bashrc atau source ~/.rydzzrc")
+            print(t("usage.source"))
 
     elif single_command.startswith("sudo"):
         handle_sudo(single_command)
@@ -658,11 +584,11 @@ def handle_command(single_command):
         merged.update(config.CONFIG.get("rydzz_aliases", {}))
         merged.update(config.USER_ALIASES)
         if merged:
-            print("Daftar Alias:")
+            print(t("alias.title"))
             for k, v in merged.items():
                 print(f"  {k} -> '{v}'")
         else:
-            print("Tidak ada alias ditemukan.")
+            print(t("alias.empty"))
 
     elif cmd in ["list", "help", "?"]:
         show_help()
@@ -706,6 +632,9 @@ def handle_command(single_command):
     elif cmd == "weather":
         gadgets.weather(arg)
 
+    elif cmd == "lang":
+        handle_lang(arg)
+
     elif cmd == "exit":
         sys.exit()
 
@@ -730,15 +659,96 @@ def handle_command(single_command):
         if shutil.which(cmd):
             config.run_system_cmd(single_command)
         else:
-            msg = f"Command Not Found: {cmd}"
+            msg = t("err.cmd_not_found", cmd=cmd)
             suggestions = difflib.get_close_matches(
                 cmd, completions.build_command_list(), n=3, cutoff=0.55
             )
             if suggestions:
-                msg += f" — Maksudmu: {', '.join(suggestions)}?"
+                msg += t("err.suggest", list=", ".join(suggestions))
             print(msg)
             config.LAST_CMD = single_command
             config.LAST_ERROR = msg
+
+
+def handle_lang(arg):
+    """Perintah multi-bahasa: lang | lang list | lang -C <kode> | lang set <kode>."""
+    args = arg.split() if arg else []
+
+    if not args:
+        print(t("lang.current", name=i18n.language_name(), code=i18n.get_language()))
+        print(t("lang.usage_help"))
+        print(t("lang.usage_hint"))
+        return
+
+    action = args[0].lower()
+    rest = args[1:]
+
+    # lang list | lang -l
+    if action in ("list", "-l", "--list"):
+        languages = i18n.list_languages()
+        if not languages:
+            print(t("lang.cancelled"))
+            return
+        print(t("lang.list_title"))
+        for code, name in languages:
+            active = " *" if code == i18n.get_language() else "  "
+            print(f"{active} {code:<6} {name}")
+        return
+
+    # lang -C <kode> / lang set <kode> / ganti bahasa
+    if action in ("-c", "-C", "--change", "set", "change"):
+        if rest:
+            code = rest[0].strip().lower()
+            if not config.apply_language(code):
+                print(t("lang.not_found", code=code))
+                print(t("lang.usage_hint"))
+                return
+            print(
+                t(
+                    "lang.changed",
+                    green=config.GREEN_NEON,
+                    reset=config.RESET,
+                    name=i18n.language_name(),
+                    code=i18n.get_language(),
+                )
+            )
+            return
+
+        # Picker interaktif
+        languages = i18n.list_languages()
+        if not languages:
+            return
+        print(t("lang.list_title"))
+        for i, (code, name) in enumerate(languages, 1):
+            active = " *" if code == i18n.get_language() else "  "
+            print(f"  {i}. {code:<6} {name}{active}")
+        try:
+            choice = input(t("lang.choose")).strip()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            return
+        if choice == "0" or not choice:
+            print(t("lang.cancelled"))
+            return
+        if not choice.isdigit() or not (1 <= int(choice) <= len(languages)):
+            print(t("lang.invalid_choice"))
+            return
+        code = languages[int(choice) - 1][0]
+        config.apply_language(code)
+        print(
+            t(
+                "lang.changed",
+                green=config.GREEN_NEON,
+                reset=config.RESET,
+                name=i18n.language_name(),
+                code=i18n.get_language(),
+            )
+        )
+        return
+
+    print(t("lang.current", name=i18n.language_name(), code=i18n.get_language()))
+    print(t("lang.usage_help"))
+    print(t("lang.usage_hint"))
 
 
 def main():
@@ -798,21 +808,7 @@ def main():
                 finally:
                     sys.stdout = capturer.real
                 output = capturer.buf.getvalue()
-                if any(
-                    kw in output
-                    for kw in (
-                        "Command Not Found",
-                        "Gagal",
-                        "gagal",
-                        "tidak ditemukan",
-                        "Tidak ditemukan",
-                        "[ERROR]",
-                        "Error",
-                        "error:",
-                        "Bukan folder",
-                        "bukan folder",
-                    )
-                ):
+                if i18n.is_error_output(output):
                     config.LAST_CMD = single_command
                     config.LAST_ERROR = output.strip()[:2000]
 
@@ -821,5 +817,5 @@ def main():
             config.reset_terminal()
             continue
         except EOFError:
-            print("\nGunakan perintah 'exit' untuk keluar.")
+            print(t("eof.exit_hint"))
             continue

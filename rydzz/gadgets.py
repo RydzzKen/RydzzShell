@@ -7,6 +7,7 @@ import urllib.request
 from urllib.parse import quote
 
 from . import config
+from .i18n import t
 
 # --- KALKULATOR (AST whitelist — bukan eval asal-usul) ---
 _MATH_FUNCS = {
@@ -41,27 +42,27 @@ def _safe_ast_eval(expr, allowed_names):
     for node in ast.walk(tree):
         if isinstance(node, ast.Name):
             if node.id not in allowed_names:
-                raise ValueError(f"nama '{node.id}' tidak dikenali/diizinkan")
+                raise ValueError(t("calc.unknown_name", name=node.id))
         elif isinstance(node, ast.Call):
             if not isinstance(node.func, ast.Name) or node.func.id not in allowed_names:
-                raise ValueError("hanya fungsi matematika dasar yang diizinkan")
+                raise ValueError(t("calc.funcs_only"))
             if len(node.args) > 2:
-                raise ValueError("terlalu banyak argumen fungsi")
+                raise ValueError(t("calc.too_many_args"))
         elif isinstance(node, ast.Constant):
             if not isinstance(node.value, (int, float)):
-                raise ValueError("konstanta hanya angka")
+                raise ValueError(t("calc.constants_only"))
         elif isinstance(node, ast.BinOp):
             if not isinstance(node.op, _ALLOWED_OPERATORS):
-                raise ValueError(f"operator '{type(node.op).__name__}' tak dizinkan")
+                raise ValueError(t("calc.op_not_allowed", op=type(node.op).__name__))
         elif isinstance(node, ast.UnaryOp):
             if not isinstance(node.op, _ALLOWED_UNARY):
-                raise ValueError(f"operator unary '{type(node.op).__name__}' tak dizinkan")
+                raise ValueError(t("calc.unary_not_allowed", op=type(node.op).__name__))
         elif isinstance(node, _ALLOWED_OPERATORS + _ALLOWED_UNARY):
             continue
         elif isinstance(node, (ast.Expression, ast.Load)):
             continue
         else:
-            raise ValueError(f"ekspresi tak didukung: {type(node).__name__}")
+            raise ValueError(t("calc.expr_unsupported", t=type(node).__name__))
     code = compile(tree, "<calc>", "eval")
     return eval(code, {"__builtins__": {}}, allowed_names)
 
@@ -69,7 +70,7 @@ def _safe_ast_eval(expr, allowed_names):
 def calc(expr):
     """Kalkulator aman: + - * / // % ** dan fungsi math dasar."""
     if not expr:
-        print("Guna: calc <ekspresi>  contoh: calc 2+2*3  |  calc sqrt(144)")
+        print(t("calc.usage"))
         return
     try:
         result = _safe_ast_eval(expr, _MATH_FUNCS)
@@ -77,7 +78,7 @@ def calc(expr):
         print(f"calc: {e}")
         return
     except ZeroDivisionError:
-        print("calc: pembagian dengan nol!")
+        print(t("calc.divzero"))
         return
     if isinstance(result, float) and result.is_integer():
         result = int(result)
@@ -110,55 +111,55 @@ def _fmt_seconds(sec):
 def timer(arg):
     """Countdown. Format: timer 90 | timer 2:30 | timer 1h30m (cancel: Ctrl+C)."""
     if not arg:
-        print("Guna: timer <detik|mm:ss>  contoh: timer 90, timer 2:30")
+        print(t("timer.usage"))
         return
     try:
         total = _parse_duration(arg)
     except ValueError:
-        print("Durasi tidak valid. Contoh: timer 90 atau timer 2:30")
+        print(t("timer.invalid"))
         return
     if total <= 0:
-        print("Durasi harus lebih dari 0.")
+        print(t("timer.positive"))
         return
 
-    print("Timer berjalan — Ctrl+C untuk batalkan.")
+    print(t("timer.running"))
     start = time.monotonic()
     remaining = total
     try:
         while remaining > 0:
-            sys.stdout.write(f"\r  Tersisa {_fmt_seconds(remaining)}  ")
+            sys.stdout.write(t("timer.remaining", time=_fmt_seconds(remaining)))
             sys.stdout.flush()
             time.sleep(min(remaining, 1))
             remaining = total - int(time.monotonic() - start)
     except KeyboardInterrupt:
-        print("\nTimer dibatalkan.")
+        print(t("timer.cancelled"))
         return
 
-    print("\r  Selesai!                       ")
+    print(t("timer.done"))
     for _ in range(3):
         sys.stdout.write("\a")
         sys.stdout.flush()
         time.sleep(0.4)
-    print("Waktu habis!")
+    print(t("timer.timeup"))
 
 
 def stopwatch(arg):
     """Stopwatch sederhana (berhenti: Ctrl+C)."""
     if not arg:
-        print("Stopwatch jalan — Ctrl+C untuk berhenti.")
+        print(t("stopwatch.running"))
     start = time.monotonic()
     prev = -1
     try:
         while True:
             sec = int(time.monotonic() - start)
             if sec != prev:
-                sys.stdout.write(f"\r  Elapsed {_fmt_seconds(sec)}  ")
+                sys.stdout.write(t("stopwatch.elapsed", time=_fmt_seconds(sec)))
                 sys.stdout.flush()
                 prev = sec
             time.sleep(0.2)
     except KeyboardInterrupt:
         total = time.monotonic() - start
-        print(f"\n  Berhenti. Total: {_fmt_seconds(total)} ({total:.1f}s)")
+        print(t("stopwatch.stopped", time=_fmt_seconds(total), total=total))
 
 
 # --- CUACA via wttr.in (gratis, tanpa API key) ---
@@ -175,14 +176,14 @@ def weather(city=""):
             data = resp.read().decode("utf-8", "replace").strip()
     except urllib.error.HTTPError as e:
         if e.code >= 400:
-            print(f"Lokasi '{city}' tidak ditemukan.")
+            print(t("weather.not_found", city=city))
         else:
-            print(f"Gagal mengambil cuaca (butuh internet): HTTP {e.code}")
+            print(t("weather.fetch_failed_http", code=e.code))
         return
     except Exception as e:
-        print(f"Gagal mengambil cuaca (butuh internet): {e}")
+        print(t("weather.fetch_failed", e=e))
         return
     if not data or data.startswith("Unknown location") or "Sorry" in data:
-        print(f"Lokasi '{city}' tidak ditemukan.")
+        print(t("weather.not_found", city=city))
         return
-    print(f"{config.CYAN}Cuaca:{config.RESET} {data}")
+    print(t("weather.label", cyan=config.CYAN, reset=config.RESET, data=data))

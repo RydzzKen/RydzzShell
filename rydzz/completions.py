@@ -19,6 +19,8 @@ BUILTIN_COMMANDS = [
     "ai", "rydza",
     # alat harian
     "timer", "stopwatch", "calc", "weather",
+    # multi-bahasa
+    "lang",
 ]
 
 _PATH_CACHE = {}

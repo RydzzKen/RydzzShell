@@ -45,3 +45,6 @@
 
 # Kota default untuk perintah weather (tanpa argumen)
 # weather city=jakarta
+
+# Bahasa antarmuka shell (id=Bahasa Indonesia, en=English) — default en
+# lang=en
