@@ -5,7 +5,8 @@ eksternal). Dibangun sebagai proyek belajar sekaligus alat harian: navigasi
 file, manajemen git, unduh video/lagu, QR code, konversi ASCII, hingga
 pipeline perintah — semuanya dari satu terminal berwarna.
 
-> Versi: **2.0** — arsitektur modular ringan (dulunya satu file 668 baris).
+> Versi: **2.1** — modular ringan, plus `wclone`, AI pemandu **RydzAgent**, dan alat
+> harian `timer`/`stopwatch`/`calc`/`weather`.
 
 ---
 
@@ -60,6 +61,27 @@ dl <url> --dry          Simulasi tanpa unduh
 ### 🌼 Tools Kecil
 - `qr <teks> [-o file.png|svg]` — QR code di terminal, bisa disimpan
 - `ascii enc|dec [-x|-b]` — konversi ASCII desimal/hex/biner
+- `wclone <url>` — klon halaman web (HTML/CSS/JS/gambar/font) jadi `.zip`
+  di `~/Downloads/rydzzWeb/`
+
+### 🧰 Alat Harian
+- `timer <detik|mm:ss>` — countdown (contoh: `timer 90`, `timer 2:30`),
+  bel saat habis, Ctrl+C untuk batalkan
+- `stopwatch` — jam berjalan realtime, Ctrl+C untuk berhenti
+- `calc <ekspresi>` — kalkulator aman: `calc 2+2*3`, `calc sqrt(144)`;
+  dukung `+ - * / // % **` dan fungsi `math` (sqrt, sin, cos, tan, log,
+  log10, exp, floor, ceil, abs, round, pow, pi, e)
+- `weather [kota]` — cuaca dari wttr.in (tanpa API key); default kota dari
+  `.rydzzrc` (`weather city=jakarta`), contoh: `weather bandung`
+
+### 🤖 AI Pemandu — RydzAgent
+- `ai <pertanyaan>` — tanya apa saja (Gemini free, Bahasa Indonesia)
+- `ai tour` — tur interaktif mengenal fitur shell
+- `ai error` — jelaskan error perintah terakhir (manual, privasi aman)
+- `Command Not Found: xxx` → otomatis disarankan command terdekat (offline)
+- Konfigurasi `.rydzzrc`: `ai=`, `ai key=`, `ai model=`, `ai base=`, `ai nama=`
+  (key gratis di https://aistudio.google.com/apikey; tanpa key tetap jalan
+  sebagai pemandu offline)
 
 ### 🔌 Integrasi Sistem
 `git`, `curl`, `wget`, `ssh`/`sshd`, `ping`, `gh`, `pip`, `node`, `df`,
@@ -95,6 +117,7 @@ Salin `rydzzrc.template` ke `~/.rydzz_home/.rydzzrc`. Direktif yang tersedia:
 | `alias=` | `alias=cl=clear` | Alias kustom |
 | `protected=add:` | `protected=add:rahasia.txt` | Proteksi file dari hapus/edit |
 | `init=` | `init=clear` | Perintah otomatis saat startup |
+| `weather city=` | `weather city=bandung` | Kota default untuk `weather` |
 
 ---
 
@@ -110,7 +133,10 @@ Rydzz/
     ├── completions.py    # Tab completion (readline)
     ├── pipe.py           # Pipeline & redirect
     ├── shell.py          # Loop utama REPL, dispatch, help
-    └── tools.py          # dl (yt-dlp/spotdl), qr (segno), ascii
+    ├── tools.py          # dl (yt-dlp/spotdl), qr (segno), ascii
+    ├── webclone.py       # wclone — klon halaman web → zip
+    ├── ai.py             # RydzAgent — AI pemandu (Gemini, opsional)
+    └── gadgets.py        # timer, stopwatch, calc, weather
 ```
 
 ## Lisensi

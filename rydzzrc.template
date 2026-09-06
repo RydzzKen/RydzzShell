@@ -25,3 +25,20 @@
 
 # Jalankan command otomatis saat startup shell
 # init=clear
+
+# ----- AI PEMANDU (RydzAgent) -----
+# Hidupkan/matikan semua fitur AI (true/false)
+# ai=true
+
+# API key Google Gemini (gratis): https://aistudio.google.com/apikey
+# ai key=
+
+# Model & endpoint (default sudah benar untuk Gemini)
+# ai model=gemini-3.6-flash
+# ai base=https://generativelanguage.googleapis.com/v1beta/openai
+
+# Nama karakter AI pemandu
+# ai nama=RydzAgent
+
+# Kota default untuk perintah weather (tanpa argumen)
+# weather city=jakarta

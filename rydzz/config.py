@@ -1,8 +1,11 @@
 import os
+import re
 import shutil
 import subprocess
 import sys
 import time
+
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 # --- 1. SETUP ENVIRONMENT & HOME KHUSUS ---
 try:
@@ -113,8 +116,24 @@ CONFIG = {
     "banner": True,
     "hidden": False,
     "auto_cd": True,
+    "ai": True,
+    "ai_key": "",
+    "ai_model": "",
+    "ai_base": "",
+    "ai_nama": "RydzAgent",
+    "weather_city": "jakarta",
     "rydzz_aliases": {},
 }
+
+# Data untuk `ai error` — isi saat perintah gagal
+LAST_CMD = ""
+LAST_ERROR = ""
+
+
+def wrap_ansi(text):
+    """Bungkus kode ANSI dengan marker non-printing readline agar lebar
+    prompt dihitung benar (mencegah teks wrap ke baris yang salah)."""
+    return ANSI_RE.sub(lambda m: "\x01" + m.group(0) + "\x02", text)
 
 
 def get_prompt_color():
@@ -264,4 +283,17 @@ def load_rydzzrc():
             elif key == "init":
                 # init=command -> jalanin command saat startup (ditangani shell)
                 CONFIG["init_command"] = value
+            elif key == "ai":
+                # ai=true/false -> matikan/aktifkan semua fitur AI
+                CONFIG["ai"] = value.lower() in ("true", "1", "yes", "on")
+            elif key == "ai key":
+                CONFIG["ai_key"] = value
+            elif key == "ai model":
+                CONFIG["ai_model"] = value
+            elif key == "ai base":
+                CONFIG["ai_base"] = value
+            elif key == "ai nama":
+                CONFIG["ai_nama"] = value
+            elif key == "weather city":
+                CONFIG["weather_city"] = value.strip().lower()
     return

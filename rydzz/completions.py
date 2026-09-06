@@ -14,7 +14,11 @@ BUILTIN_COMMANDS = [
     "gs", "ga", "gl", "gb", "gd", "gp", "gpl", "gst", "gc", "gco",
     "gclone",
     # fitur baru
-    "tree", "dl", "qr", "ascii",
+    "tree", "dl", "qr", "ascii", "wclone", "wcode",
+    # AI pemandu
+    "ai", "rydza",
+    # alat harian
+    "timer", "stopwatch", "calc", "weather",
 ]
 
 _PATH_CACHE = {}

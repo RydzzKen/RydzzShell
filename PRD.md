@@ -3,10 +3,10 @@
 | | |
 | --- | --- |
 | **Produk** | Rydzz — Custom Interactive Shell |
-| **Versi PRD** | 1.0 |
-| **Versi Produk** | 2.0 |
+| **Versi PRD** | 1.1 |
+| **Versi Produk** | 2.1 |
 | **Penulis** | RydzzKen |
-| **Status** | Diluncurkan (v2.0.modular) |
+| **Status** | Diluncurkan (v2.1) |
 
 ---
 
@@ -68,6 +68,9 @@ sekaligus alat harian personal.
 | F13 | `ascii` | Konversi desimal/hex/biner |
 | F14 | Git/gh real auth | Kredensial asli dibawa hanya untuk perintah tertentu |
 | F15 | `sudo newpass` / `sudo edit` | File rahasia terproteksi |
+| F21 | `wclone` web cloner | Klon halaman web → zip (HTML/CSS/JS/gambar/font), zero-dependency |
+| F22 | AI Pemandu RydzAgent | `ai` chat/tour/error (Gemini free, fakultatif), saran command offline |
+| F23 | Alat harian kecil | `timer` countdown, `stopwatch`, `calc` kalkulator aman (AST whitelist), `weather` (wttr.in tanpa key) |
 
 ### P2 — Rencana
 | ID | Fitur | Keterangan |
@@ -90,7 +93,14 @@ sekaligus alat harian personal.
   - `pipe.py` — pipeline execution + env real-home untuk `gh`/`git`.
   - `shell.py` — REPL loop, dispatch, help, alias, TG (text generator).
   - `tools.py` — downloader (`yt-dlp`/`spotdl`), QR (`segno`), ASCII.
-- **Dependency opsional:** `yt-dlp` (F10), `segno` (F12), `spotdl` (F11).
+  - `webclone.py` — `wclone`, klon halaman web → zip (stdlib `urllib`/
+    `html.parser`/`zipfile`).
+  - `ai.py` — AI Pemandu RydzAgent: chat/tour/error via Gemini (OpenAI-compat,
+    stdlib `urllib`), fallback offline tanpa API key.
+  - `gadgets.py` — alat harian: `timer`, `stopwatch`, `calc` (parser AST
+    aman, stdlib `ast`), `weather` (wttr.in via stdlib `urllib`, tanpa key).
+- **Dependency opsional:** `yt-dlp` (F10), `segno` (F12), `spotdl` (F11),
+  dan API key Gemini (F22, opsional — tanpa key memakai fallback offline).
   Inti shell tanpa dependency.
 - **Alur HOME:** `REAL_HOME` ditangkap sebelum override; shell berjalan di
   `CUSTOM_HOME` (`~/.rydzz_home`); perintah `gh`/`git`/`yt-dlp`/`spotdl`
@@ -112,19 +122,24 @@ sekaligus alat harian personal.
 | yt-dlp kena rate-limit/DRM situs | Download gagal | `dl update` rutin; platform pptp |
 | Platform baru belum ada di `PLATFORM_MAP` | Masuk folder `Lainnya/` | Tambah mapping, harap kontribusi |
 | Home sandbox vs real home keliru | Auth bocor/hilang | Hanya command `gh/git/yt-dlp/spotdl` yang pakai real home |
+| wttr.in berubah format / keblokir | `weather` gagal / data aneh | Pesan error ramah; dukung kota default `.rydzzrc`; pakai User-Agent umum |
 
 ## 9. Metrik Keberhasilan
 
 - Kemudahan: seluruh fitur inti dipakai tanpa baca dokumentasi.
 - Kelengkapan tugas: unduh video (yt-dlp), unduh lagu Spotify (spotdl),
-  buat QR, konversi ASCII, dan push git dari satu shell.
+  buat QR, konversi ASCII, hitung cepat (`calc`), timer masak (`timer`),
+  cek cuaca (`weather`), dan push git dari satu shell.
 - Portabilitas: berjalan di Linux, Termux/Android, macOS, Windows.
 
 ## 10. Roadmap
 
-- **v2.0 (urutan ini)** — modular, 8 fitur baru, gh/git real auth,
+- **v2.0** — modular (paket `rydzz/`), gh/git real auth,
   tools `dl` (6+ platform, Spotify, folder per-OS), `qr`, `ascii`.
-- **v2.1** — pipe ke builtin, history permanen, unit test.
+- **v2.1** — `wclone` web cloner (F21), AI Pemandu RydzAgent (F22),
+  alat harian kecil (F23): `timer`, `stopwatch`, `calc`, `weather`.
+- **v2.2 (rencana)** — sisa P2: pipe ke builtin (F16), history permanen
+  (F17), alias export (F18), UI batch/playlist di `dl` (F19), unit test (F20).
 
 ---
 

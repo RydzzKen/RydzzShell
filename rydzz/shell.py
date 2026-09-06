@@ -1,4 +1,6 @@
+import difflib
 import getpass
+import io
 import os
 import shutil
 import sys
@@ -9,7 +11,27 @@ try:
 except ImportError:
     readline = None
 
-from . import commands, completions, config, pipe, tools
+from . import ai, commands, completions, config, gadgets, pipe, tools, webclone
+
+
+class _OutputCapturer:
+    """Tee stdout: output tetap tampil, sekaligus disalin ke buffer.
+    Dipakai untuk menangkap error terakhir bagi `ai error`."""
+
+    def __init__(self):
+        self.real = sys.stdout
+        self.buf = io.StringIO()
+
+    def write(self, s):
+        self.real.write(s)
+        self.buf.write(s)
+        return len(s)
+
+    def flush(self):
+        self.real.flush()
+
+    def isatty(self):
+        return self.real.isatty()
 
 
 def handle_dl(arg):
@@ -128,6 +150,14 @@ def show_help():
     )
     print("    ascii enc \"kata\"          -   kata → kode")
     print("    ascii dec \"104 101 ...\"   -   kode → kata")
+    print("• wclone <url> (alias wcode) - Klon halaman web -> zip (HTML/CSS/JS)")
+    print("• ai <tanya>                - Tanya AI Pemandu RydzAgent")
+    print("    ai tour                  -   tur interaktif fitur shell")
+    print("    ai error                 -   jelaskan error perintah terakhir")
+    print("• timer <detik|mm:ss>      - Countdown (Ctrl+C batalkan)")
+    print("• stopwatch                - Stopwatch (Ctrl+C berhenti)")
+    print("• calc <ekspresi>          - Kalkulator (2+2*3, sqrt(144), ...)")
+    print("• weather [kota]           - Cuaca kota (default: jakarta)")
     print("• clear                    - Membersihkan layar")
     print("• exit                     - Keluar dari shell")
     print("• <cmd1> && <cmd2>         - Menjalankan 2 perintah sekaligus")
@@ -145,6 +175,24 @@ def show_help():
 
 
 # Mode bantuan terpisah untuk auto-cd (cegah kebingungan nama command)
+def handle_ai(arg):
+    """Perintah AI Pemandu (RydzAgent): ai <tanya> | ai tour | ai error."""
+    arg = arg.strip()
+    if not arg:
+        print("Guna: ai <pertanyaan> | ai tour | ai error")
+        print("  ai <tanya>   - tanya RydzAgent tentang apa saja")
+        print("  ai tour      - tur interaktif mengenal fitur shell")
+        print("  ai error     - jelaskan error perintah terakhir")
+        return
+    low = arg.lower()
+    if low == "tour":
+        ai.tour()
+    elif low == "error":
+        ai.explain_last_error()
+    else:
+        ai.chat(arg)
+
+
 def handle_custom_ls(arg):
     args = arg.split() if arg else []
     commands.custom_ls(*args)
@@ -569,6 +617,24 @@ def handle_command(single_command):
     elif cmd == "ascii":
         handle_ascii(arg)
 
+    elif cmd in ("wclone", "wcode"):
+        webclone.clone_site(arg)
+
+    elif cmd in ("ai", "rydza"):
+        handle_ai(arg)
+
+    elif cmd == "timer":
+        gadgets.timer(arg)
+
+    elif cmd == "stopwatch":
+        gadgets.stopwatch(arg)
+
+    elif cmd == "calc":
+        gadgets.calc(arg)
+
+    elif cmd == "weather":
+        gadgets.weather(arg)
+
     elif cmd == "exit":
         sys.exit()
 
@@ -593,7 +659,15 @@ def handle_command(single_command):
         if shutil.which(cmd):
             config.run_system_cmd(single_command)
         else:
-            print(f"Command Not Found: {cmd}")
+            msg = f"Command Not Found: {cmd}"
+            suggestions = difflib.get_close_matches(
+                cmd, completions.build_command_list(), n=3, cutoff=0.55
+            )
+            if suggestions:
+                msg += f" — Maksudmu: {', '.join(suggestions)}?"
+            print(msg)
+            config.LAST_CMD = single_command
+            config.LAST_ERROR = msg
 
 
 def main():
@@ -625,7 +699,7 @@ def main():
         prompt_color = config.get_prompt_color()
 
         try:
-            prompt = (
+            prompt = config.wrap_ansi(
                 f"{prompt_color}RydzzShell{level_str}:[{cwd}]{git_info}$ "
                 f"{config.RESET}"
             )
@@ -642,7 +716,30 @@ def main():
             for single_command in commands_seq:
                 if not single_command:
                     continue
-                handle_command(single_command)
+                capturer = _OutputCapturer()
+                sys.stdout = capturer
+                try:
+                    handle_command(single_command)
+                finally:
+                    sys.stdout = capturer.real
+                output = capturer.buf.getvalue()
+                if any(
+                    kw in output
+                    for kw in (
+                        "Command Not Found",
+                        "Gagal",
+                        "gagal",
+                        "tidak ditemukan",
+                        "Tidak ditemukan",
+                        "[ERROR]",
+                        "Error",
+                        "error:",
+                        "Bukan folder",
+                        "bukan folder",
+                    )
+                ):
+                    config.LAST_CMD = single_command
+                    config.LAST_ERROR = output.strip()[:2000]
 
         except KeyboardInterrupt:
             print("\n^C")
