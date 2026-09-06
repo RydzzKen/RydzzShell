@@ -20,7 +20,8 @@ def test_record_dedupe_same_url(tmp_path, monkeypatch):
     assert len(tools._load_index()) == 1
 
 
-def test_load_index_missing_returns_empty():
+def test_load_index_missing_returns_empty(monkeypatch, tmp_path):
+    monkeypatch.setattr(tools, "INDEX_FILE", str(tmp_path / ".index.json"))
     assert tools._load_index() == []
 
 
@@ -42,7 +43,8 @@ def test_redownload_unknown_number(tmp_path, monkeypatch, capsys):
     assert "tidak ada" in capsys.readouterr().out
 
 
-def test_redownload_no_record(capsys):
+def test_redownload_no_record(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(tools, "INDEX_FILE", str(tmp_path / ".index.json"))
     tools.redownload([])
     assert "--redo" in capsys.readouterr().out
 
@@ -56,6 +58,13 @@ def test_platform_dir_common():
 
 def test_platform_dir_unknown():
     assert tools._platform_dir("https://example.com/video") == "Lainnya"
+
+
+def test_platform_label_has_icon():
+    label = tools.platform_label("YouTube")
+    assert tools.platform_icon("YouTube") in label
+    assert "YouTube" in label
+    assert tools.platform_icon("TakDikenal") == "🌐"
 
 
 def test_spotify_detection():

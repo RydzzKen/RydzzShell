@@ -136,6 +136,40 @@ PLATFORM_MAP = [
 # Host Spotify → diselesaikan lewat pencarian YouTube
 SPOTIFY_HOSTS = ("spotify.com", "open.spotify", "spotify.link")
 
+# Logo tiap platform untuk header unduhan / daftar
+PLATFORM_ICONS = {
+    "YouTube": "📺",
+    "TikTok": "🎵",
+    "Instagram": "📸",
+    "X": "🐦",
+    "Facebook": "👍",
+    "Reddit": "🤖",
+    "Twitch": "🎮",
+    "Bilibili": "🦊",
+    "SoundCloud": "🎧",
+    "Dailymotion": "▶",
+    "Vimeo": "🎬",
+    "Pinterest": "📌",
+    "Rumble": "🥊",
+    "Odysee": "📼",
+    "Likee": "✨",
+    "Snapchat": "👻",
+    "Telegram": "📨",
+    "Discord": "💬",
+    "Spotify": "🎵",
+    "TwitCasting": "🎥",
+    "Lainnya": "📁",
+}
+
+
+def platform_icon(platform):
+    return PLATFORM_ICONS.get(platform, "🌐")
+
+
+def platform_label(platform):
+    """Nama platform dengan logo (ikon) di depannya."""
+    return f"{platform_icon(platform)} {platform}"
+
 
 def _platform_dir(url):
     host = urlparse(url).netloc.lower()
@@ -214,7 +248,7 @@ def download_video(url, audio_only=False, dry_run=False, force=False):
         cmd += ["-x", "--audio-format", "mp3"]
     cmd.append(url)
 
-    print(f"Memproses video dari {platform}...")
+    print(f"Memproses video dari {platform_label(platform)}...")
     rc = config.run_system_cmd_real_home(" ".join(f'"{c}"' for c in cmd))
     if rc != 0:
         print("Download gagal (cek error di atas).")
@@ -307,7 +341,7 @@ def download_batch(urls, audio_only=False, dry_run=False, force=False):
     for i, url in enumerate(urls, 1):
         platform = _platform_dir(url)
         header = (
-            f"  [{i}/{total}] {config.MAGENTA}{platform}{config.RESET} "
+            f"  [{i}/{total}] {config.MAGENTA}{platform_label(platform)}{config.RESET} "
             f"→ {_url_display(url)}"
         )
         print(header)
@@ -347,7 +381,7 @@ def redownload(args):
         print("Daftar unduhan (dl redo <nomor> untuk unduh ulang):")
         for i, e in enumerate(entries, 1):
             print(
-                f"  {i:>3}. {config.MAGENTA}{e.get('platform', '?')}{config.RESET}"
+                f"  {i:>3}. {config.MAGENTA}{platform_label(e.get('platform', '?'))}{config.RESET}"
                 f"  {_url_display(e.get('url', ''), 60)}  "
                 f"{config.DIM}{e.get('time', '')}{config.RESET}"
             )
@@ -457,7 +491,7 @@ def list_downloads(opts=None):
             fmt.format(
                 f"{color}{shown}{config.RESET}",
                 _human_size(size),
-                platform,
+                platform_label(platform),
             )
         )
 
