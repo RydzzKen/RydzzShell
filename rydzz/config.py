@@ -17,9 +17,11 @@ try:
 
     REAL_HOME = pwd.getpwuid(os.getuid()).pw_dir
 except Exception:
-    REAL_HOME = os.path.expanduser("~")
+    REAL_HOME = os.environ.get("USERPROFILE") or os.path.expanduser("~")
 
-CUSTOM_HOME = os.path.expanduser("~/.rydzz_home")
+# CUSTOM_HOME di-hitung dari REAL_HOME (bukan env HOME) agar tidak bertumpuk
+# saat HOME sudah diganti ke folder sandbox pada sesi/sekarang restart.
+CUSTOM_HOME = os.path.join(REAL_HOME, ".rydzz_home")
 if not os.path.exists(CUSTOM_HOME):
     os.makedirs(CUSTOM_HOME)
 
