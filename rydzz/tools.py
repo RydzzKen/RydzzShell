@@ -1,6 +1,8 @@
+import json
 import os
 import shutil
 import sys
+import time
 from urllib.parse import urlparse
 
 from . import config
@@ -61,6 +63,42 @@ DOWNLOAD_DIR = _default_download_dir()
 # --- DOWNLOADER ---
 DL_ROOT = os.path.join(DOWNLOAD_DIR, "rydzzMedia")
 
+# Indeks unduhan (URL sumber) agar bisa re-download dari daftar tanpa hafal URL
+INDEX_FILE = os.path.join(DL_ROOT, ".rydzz_index.json")
+_INDEX_LIMIT = 500
+
+
+def _load_index():
+    """Membaca indeks unduhan (list {url, platform, time})."""
+    try:
+        with open(INDEX_FILE, "r", encoding="utf-8") as f:
+            entries = json.load(f)
+        return entries if isinstance(entries, list) else []
+    except FileNotFoundError:
+        return []
+    except (OSError, ValueError):
+        return []
+
+
+def _save_index(entries):
+    try:
+        os.makedirs(DL_ROOT, exist_ok=True)
+        with open(INDEX_FILE, "w", encoding="utf-8") as f:
+            json.dump(entries[-_INDEX_LIMIT:], f, ensure_ascii=False, indent=1)
+    except OSError:
+        pass
+
+
+def _record_download(url, platform):
+    """Catat keberhasilan unduhan untuk dipakai `dl redo`."""
+    entries = [e for e in _load_index() if e.get("url") != url]
+    entries.insert(0, {
+        "url": url,
+        "platform": platform,
+        "time": time.strftime("%Y-%m-%d %H:%M"),
+    })
+    _save_index(entries)
+
 PLATFORM_MAP = [
     ("youtube.com", "YouTube"),
     ("youtu.be", "YouTube"),
@@ -113,12 +151,42 @@ def _ensure_dl_dirs(platform):
     return outdir
 
 
-def download_video(url, audio_only=False, dry_run=False):
+def _human_size(num):
+    """Format ukuran bytes jadi B/KB/MB/GB/TB."""
+    try:
+        num = float(num)
+    except (TypeError, ValueError):
+        return "?"
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if num < 1024 or unit == "TB":
+            if unit == "B":
+                return f"{int(num)} {unit}"
+            return f"{num:.1f} {unit}"
+        num /= 1024
+    return "?"
+
+
+def _url_display(url, width=55):
+    """Url pendek untuk ditampilkan di header batch."""
+    try:
+        parsed = urlparse(url)
+        path = parsed.path.strip("/")
+        host = parsed.netloc or url.split("/")[0]
+        compact = f"{host}/{path}" if path else host
+    except Exception:
+        compact = url
+    if len(compact) <= width:
+        return compact
+    return compact[: width - 3] + "..."
+
+
+def download_video(url, audio_only=False, dry_run=False, force=False):
     """Mengunduh video/audio dari URL medsos ke rydzzMedia/<Platform>/.
 
     URL Spotify tidak didukung oleh yt-dlp (DRM) — ditangani lewat
     `spotdl`, yang menerjemahkan ke sumber audio lalu mengunduhnya.
     Track/album/playlist Spotify didukung.
+    `force=True` mengunduh ulang walau file sudah ada (--force-overwrites).
     """
     yt_dlp = shutil.which("yt-dlp")
     if not yt_dlp:
@@ -140,14 +208,19 @@ def download_video(url, audio_only=False, dry_run=False):
     ]
     if dry_run:
         cmd.append("--simulate")
-    cmd.append("--no-playlist")
+    if force:
+        cmd.append("--force-overwrites")
     if audio_only:
         cmd += ["-x", "--audio-format", "mp3"]
     cmd.append(url)
 
     print(f"Memproses video dari {platform}...")
-    config.run_system_cmd_real_home(" ".join(f'"{c}"' for c in cmd))
+    rc = config.run_system_cmd_real_home(" ".join(f'"{c}"' for c in cmd))
+    if rc != 0:
+        print("Download gagal (cek error di atas).")
+        return False
     if not dry_run:
+        _record_download(url, platform)
         print(f"Hasil disimpan di: {outdir}")
     return True
 
@@ -197,6 +270,7 @@ def _download_spotify(url, outdir, dry_run, yt_dlp):
     _cleanup_tmp(tmpdir)
 
     if moved:
+        _record_download(url, "Spotify")
         print(f"Berhasil: {moved} lagu disimpan di {outdir}")
     else:
         print("Tidak ada lagu yang terunduh (cek error spotdl di atas).")
@@ -210,8 +284,119 @@ def _cleanup_tmp(tmpdir):
         pass
 
 
-def list_downloads():
-    """Menampilkan seluruh file yang sudah terunduh, dikelompok per platform."""
+def download_batch(urls, audio_only=False, dry_run=False, force=False):
+    """Mengunduh beberapa URL sekaligus dengan header [i/N] per item.
+
+    Jika hanya satu URL, langsung diteruskan ke download_video (agar
+    tampilan tetap konsisten dengan unduhan tunggal).
+    """
+    urls = [u.strip() for u in urls if u.strip()]
+    if not urls:
+        return False
+
+    if len(urls) == 1:
+        return download_video(
+            urls[0], audio_only=audio_only, dry_run=dry_run, force=force
+        )
+
+    total = len(urls)
+    ok = failed = 0
+    print(
+        f"{config.BOLD}{config.CYAN}Download Batch ({total} item){config.RESET}"
+    )
+    for i, url in enumerate(urls, 1):
+        platform = _platform_dir(url)
+        header = (
+            f"  [{i}/{total}] {config.MAGENTA}{platform}{config.RESET} "
+            f"→ {_url_display(url)}"
+        )
+        print(header)
+        try:
+            result = download_video(url, audio_only, dry_run, force)
+        except KeyboardInterrupt:
+            print(f"{config.RED}  [GAGAL]{config.RESET} Dibatalkan pada item {i}.")
+            break
+        if result:
+            ok += 1
+        else:
+            failed += 1
+
+    total_sukses = ok
+    total_gagal = failed
+    if total_gagal:
+        print(
+            f"{config.RED}[GAGAL]{config.RESET} {total_gagal} item. "
+            f"{config.GREEN_NEON}[SUKSES]{config.RESET} {total_sukses} item."
+        )
+    else:
+        print(
+            f"{config.GREEN_NEON}[SUKSES]{config.RESET} "
+            f"Semua {total_sukses} item berhasil."
+        )
+    return total_gagal == 0
+
+
+def redownload(args):
+    """Unduh ulang dari indeks: `dl redo` (daftar) | `dl redo <nomor|url>`."""
+    entries = _load_index()
+
+    if not args:
+        if not entries:
+            print("Belum ada catatan unduhan. Gunakan: dl <url> --redo")
+            return False
+        print("Daftar unduhan (dl redo <nomor> untuk unduh ulang):")
+        for i, e in enumerate(entries, 1):
+            print(
+                f"  {i:>3}. {config.MAGENTA}{e.get('platform', '?')}{config.RESET}"
+                f"  {_url_display(e.get('url', ''), 60)}  "
+                f"{config.DIM}{e.get('time', '')}{config.RESET}"
+            )
+        print("  (langsung pakai URL: dl redo <url>)")
+        return True
+
+    targets = []
+    for a in args:
+        if a.isdigit():
+            i = int(a)
+            if 1 <= i <= len(entries):
+                targets.append(entries[i - 1]["url"])
+            else:
+                print(f"Nomor {a} tidak ada. Cek: dl redo")
+                return False
+        else:
+            targets.append(a)
+    return download_batch(targets, force=True)
+
+
+def list_downloads(opts=None):
+    """Menampilkan seluruh file ter-unduh dengan kolom adaptif.
+
+    Opsi:
+      -n <N> / -n<N>  hanya tampilkan N file terbaru
+      -s / --sort-size  urutkan dari ukuran terbesar
+    """
+    opts = opts or []
+    limit = None
+    sort_size = False
+    i = 0
+    while i < len(opts):
+        o = opts[i]
+        if o in ("-n", "--newest"):
+            if i + 1 < len(opts) and opts[i + 1].isdigit():
+                limit = int(opts[i + 1])
+                i += 2
+                continue
+        elif o.startswith("-n") and o[2:].isdigit():
+            limit = int(o[2:])
+        elif o in ("-s", "--sort-size"):
+            sort_size = True
+        elif o in ("-h", "--help"):
+            print("Guna: dl list [-n <jumlah>] [-s]")
+            print("  -n <jumlah>  hanya item terbaru (default: semua)")
+            print("  -s           urutkan dari ukuran terbesar")
+            return
+        i += 1
+
     if not os.path.exists(DL_ROOT):
         print(f"Belum ada download. Folder: {DL_ROOT}")
         return
@@ -222,28 +407,59 @@ def list_downloads():
         if os.path.isdir(os.path.join(DL_ROOT, p))
     )
 
-    if not platforms:
+    entries = []
+    for platform in platforms:
+        pdir = os.path.join(DL_ROOT, platform)
+        for f in os.listdir(pdir):
+            full = os.path.join(pdir, f)
+            if not os.path.isfile(full):
+                continue
+            try:
+                size = os.path.getsize(full)
+                mtime = os.path.getmtime(full)
+            except OSError:
+                size, mtime = 0, 0
+            entries.append((platform, f, size, mtime))
+
+    if not entries:
         print(f"Folder {DL_ROOT} kosong.")
         return
 
-    print(f"{config.PURPLE}{DL_ROOT}{config.RESET}")
-    total = 0
-    for platform in platforms:
-        pdir = os.path.join(DL_ROOT, platform)
-        files = sorted(
-            f
-            for f in os.listdir(pdir)
-            if os.path.isfile(os.path.join(pdir, f))
+    if sort_size:
+        entries.sort(key=lambda e: (-e[2], e[1]))
+    else:
+        entries.sort(key=lambda e: (-e[3], e[1]))
+    if limit:
+        entries = entries[:limit]
+
+    total_size = sum(e[2] for e in entries)
+    print(
+        f"{config.PURPLE}rydzzMedia{config.RESET} · {len(entries)} file "
+        f"· {_human_size(total_size)}"
+    )
+
+    try:
+        term_width = os.get_terminal_size().columns
+    except OSError:
+        term_width = 80
+    name_width = max(len(e[1]) for e in entries)
+    name_width = min(name_width, max(12, term_width - 26))
+    fmt = f"  {{:<{name_width}}}  {{:>9}}  {{}}"
+
+    print(fmt.format("Nama", "Ukuran", "Platform"))
+    print("  " + "-" * max(12, term_width - 2))
+
+    for platform, fname, size, _mtime in entries:
+        full = os.path.join(DL_ROOT, platform, fname)
+        color = config.get_file_color(full)
+        shown = fname if len(fname) <= name_width else fname[: name_width - 3] + "..."
+        print(
+            fmt.format(
+                f"{color}{shown}{config.RESET}",
+                _human_size(size),
+                platform,
+            )
         )
-        if not files:
-            continue
-        color = config.get_file_color(pdir)
-        print(f"  {color}{platform}{config.RESET}/")
-        for f in files:
-            print(f"    {f}")
-            total += 1
-    if total:
-        print(f"Total: {total} file")
 
 
 def update_ytdlp():

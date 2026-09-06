@@ -37,21 +37,37 @@ class _OutputCapturer:
 def handle_dl(arg):
     args = arg.split() if arg else []
     if not args:
-        print("Guna: dl <url> [-q] | dl list | dl update")
+        print(
+            "Guna: dl <url1> <url2> ... [-q] | dl list [opsi] | dl update"
+        )
+        print("  dl <url> --redo       - unduh ulang walau file sudah ada")
+        print("  dl list -n 5          - 5 unduhan terbaru")
+        print("  dl list -s            - urutkan dari ukuran terbesar")
+        print("  dl redo               - daftar unduhan untuk diulang")
+        print("  dl redo <nomor|url>   - unduh ulang item dari daftar")
         return
 
     if args[0] == "list":
-        tools.list_downloads()
+        tools.list_downloads(args[1:])
         return
     if args[0] == "update":
         print("Meng-update yt-dlp...")
         tools.update_ytdlp()
         return
+    if args[0] == "redo":
+        tools.redownload(args[1:])
+        return
 
-    url = args[0]
     audio_only = "-q" in args or "--audio" in args
     dry_run = "--dry" in args or "-s" in args
-    tools.download_video(url, audio_only=audio_only, dry_run=dry_run)
+    force = "--redo" in args or "--force" in args
+    urls = [a for a in args if not a.startswith("-")]
+    if not urls:
+        print("Guna: dl <url1> <url2> ... [-q]")
+        return
+    tools.download_batch(
+        urls, audio_only=audio_only, dry_run=dry_run, force=force
+    )
 
 
 def handle_qr(arg):
@@ -105,7 +121,7 @@ def show_banner():
  |  _  /     \\___ \\| '_ \\ / _ \\ |
  | | \\ \\ _   ____) | | | |  __/ |
  |_|  \\_(_) |_____/|_| |_|\\___|_|
-{config.CYAN}    --- Custom Interactive Shell v2.0 ---{config.RESET}
+{config.CYAN}    --- Custom Interactive Shell v2.2 ---{config.RESET}
 {config.YELLOW}  Ketik 'help' atau '?' untuk daftar perintah.{config.RESET}
 """
     print(banner)
@@ -126,7 +142,7 @@ def show_help():
     print("• cat / nano <file>        - Baca / edit file teks")
     print("• touch <file>             - Membuat/update timestamp file")
     print("• echo <teks>              - Mencetak teks")
-    print("• history                  - Melihat riwayat perintah")
+    print("• history [-c]               - Riwayat perintah (permanen antar-sesi; -c hapus)")
     print("• python / py <file.py>    - Menjalankan script Python")
     print("• pip / node               - Pipeline Python & Node")
     print("• git / curl / wget        - Download & Network tools")
@@ -140,9 +156,15 @@ def show_help():
     print("• alias / aliases          - Menampilkan alias yang dibaca dari ~/.bashrc")
     print("• TG                       - Membuka Text Generator")
     print("• dl <url>                 - Unduh video/lagu ke download/rydzzMedia")
-    print("    dl <url> -q            -   audio saja (mp3)")
-    print("    dl list                 -   lihat file ter-unduh")
-    print("    dl update               -   update yt-dlp")
+    print("    dl <url1> <url2> ...     -   unduh batch beberapa url sekaligus")
+    print("    dl <url> -q              -   audio saja (mp3)")
+    print("    dl <url> --redo          -   unduh ulang walau file sudah ada")
+    print("    dl redo                  -   daftar unduhan yang bisa diulang")
+    print("    dl redo <nomor|url>      -   unduh ulang dari daftar")
+    print("    dl list                  -   lihat file ter-unduh")
+    print("    dl list -n 5             -   5 unduhan terbaru")
+    print("    dl list -s               -   urutkan dari ukuran terbesar")
+    print("    dl update                -   update yt-dlp")
     print("• qr <teks>                - Tampilkan QR di terminal")
     print("    qr <teks> -o file.png  -   simpan QR (png/svg)")
     print(
@@ -162,6 +184,7 @@ def show_help():
     print("• exit                     - Keluar dari shell")
     print("• <cmd1> && <cmd2>         - Menjalankan 2 perintah sekaligus")
     print("• cmd1 | cmd2              - Pipe output cmd1 ke cmd2")
+    print("    (bisa dipipe ke builtin: help | grep, history | grep, ...)")
     print("")
     print("--- SHORTCUT GIT ---")
     print("• gs=status ga=add gl=log gb=branch gd=diff")
@@ -303,12 +326,35 @@ def handle_sudo(single_command):
     return True
 
 
+# Builtin yang boleh dipipe (agar `help | grep`, `history | grep`, dst. jalan)
+PIPE_BUILTINS = {
+    "help", "?", "list", "history", "echo", "alias", "aliases",
+    "tree", "pwd", "cat", "calc", "ascii", "weather", "ai",
+}
+
+
+def _run_builtin_capture(seg):
+    """Jalankan segmen sebagai builtin & kembalikan stdout-nya (atan None)."""
+    parts = seg.split(maxsplit=1)
+    cmd = parts[0] if parts else ""
+    if cmd not in PIPE_BUILTINS:
+        return None
+    old_stdout = sys.stdout
+    buf = io.StringIO()
+    sys.stdout = buf
+    try:
+        handle_command(seg)
+    finally:
+        sys.stdout = old_stdout
+    return buf.getvalue()
+
+
 def handle_command(single_command):
     """Menangani satu perintah (setelah dipisah dari &&/|)."""
 
     # --- PIPE SUPPORT ---
     if pipe.has_pipe(single_command) and len(pipe.split_pipes(single_command)) > 1:
-        pipe.execute_pipeline(single_command)
+        pipe.execute_pipeline(single_command, builtin_runner=_run_builtin_capture)
         return
 
     # --- REDIRECT SUPPORT (> dan >>) ---
@@ -526,9 +572,32 @@ def handle_command(single_command):
             print("Guna: nano <nama_file>")
 
     elif cmd == "history":
-        print("Daftar Riwayat Perintah:")
-        for i, h_cmd in enumerate(config.COMMAND_HISTORY, 1):
-            print(f"  {i}  {h_cmd}")
+        args = arg.split()
+        if "-c" in args or "--clear" in args:
+            config.COMMAND_HISTORY.clear()
+            config._flush_history_buffer()
+            try:
+                readline.clear_history()
+            except Exception:
+                pass
+            print(
+                f"{config.GREEN_NEON}[SUKSES]{config.RESET} "
+                "Riwayat perintah dibersihkan."
+            )
+            return
+        history = config.COMMAND_HISTORY
+        if not history:
+            print("Belum ada riwayat perintah.")
+            return
+        total = len(history)
+        print(f"Daftar Riwayat Perintah ({total}):")
+        last = total - 1
+        for i, h_cmd in enumerate(history):
+            line = f"  {config.DIM}{i + 1:>4}{config.RESET}  {h_cmd}"
+            if i == last:
+                line = f"  {config.DIM}{i + 1:>4}{config.RESET}  {config.CYAN}{h_cmd}{config.RESET}"
+            print(line)
+        print("  (perintah terakhir ditandai cyan — untuk hapus: history -c)")
 
     elif cmd == "echo":
         print(arg)
@@ -572,9 +641,11 @@ def handle_command(single_command):
     elif cmd == "source":
         if arg in ("~/.bashrc", os.path.expanduser("~/.bashrc")):
             config.USER_ALIASES = config.load_bashrc_aliases()
+            completions.refresh()
             print("Berhasil meng-update alias dari ~/.bashrc!")
         elif arg in ("~/.rydzzrc", config.RYDZZRC_PATH):
             config.load_rydzzrc()
+            completions.refresh()
             print("Berhasil meng-update konfigurasi dari ~/.rydzzrc!")
         else:
             print("Guna: source ~/.bashrc atau source ~/.rydzzrc")
@@ -678,8 +749,12 @@ def main():
     config.USER_ALIASES = config.load_bashrc_aliases()
     config.load_rydzzrc()
 
+    # Muat riwayat permanen antar-sesi
+    config.load_history()
+
     # Setup readline / tab completion
     completions.setup_readline()
+    completions.setup_readline_history()
 
     # Tampilkan banner (kecuali dimatikan via .rydzzrc)
     if config.CONFIG.get("banner", True) and "RYDZZ_INIT" not in os.environ:
@@ -708,7 +783,7 @@ def main():
             if not raw_input:
                 continue
 
-            config.COMMAND_HISTORY.append(raw_input)
+            config.append_history(raw_input)
 
             # --- FITUR DOUBLE COMMAND (&&) ---
             commands_seq = [c.strip() for c in raw_input.split("&&")]

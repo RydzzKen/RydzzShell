@@ -5,18 +5,27 @@ eksternal). Dibangun sebagai proyek belajar sekaligus alat harian: navigasi
 file, manajemen git, unduh video/lagu, QR code, konversi ASCII, hingga
 pipeline perintah — semuanya dari satu terminal berwarna.
 
-> Versi: **2.1** — modular ringan, plus `wclone`, AI pemandu **RydzAgent**, dan alat
-> harian `timer`/`stopwatch`/`calc`/`weather`.
+> Versi: **2.2** — history permanen, pipe ke builtin, batch/re-download di `dl`,
+> `dl list` kolom adaptif, dan unit test (pytest).
+
+![Versi](https://img.shields.io/badge/Versi-v2.2-2ea44f)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Dependency](https://img.shields.io/badge/Inti-Tanpa%20dependency-6f42c1)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%E2%80%A2%20Termux%20%E2%80%A2%20macOS%20%E2%80%A2%20Windows-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-pytest-green)
 
 ---
 
 ## Fitur Utama
 
 ### 🐚 Inti Shell
-- Prompt berwarna kustom, banner startup, riwayat perintah (`history`)
+- Prompt berwarna kustom, banner startup, **riwayat permanen** (`history`,
+  lintas-sesi, tersimpan di `~/.rydzz_home/.rydzz_history`)
 - **Auto-cd**: ketik nama folder, langsung pindah
-- **Tab completion** pintar (perintah, alias, path)
-- **Pipe** (`cmd1 | cmd2`) dan **chaining** (`cmd1 && cmd2`)
+- **Tab completion** pintar (perintah, alias, path) — alias `.bashrc` ikut
+  disegarkan otomatis setelah `source ~/.bashrc`
+- **Pipe** (`cmd1 | cmd2`) dan **chaining** (`cmd1 && cmd2`) — kini pipe **dapat
+  memasuki builtin** (`help | grep`, `history | grep`, `echo | tr`, dst.)
 - **Redirect** output (`>` dan `>>`)
 - **Sandbox HOME**: perintah berjalan di `~/.rydzz_home`, terpisah dari home
   asli — kecuali `gh`/`git`/`yt-dlp` yang memakai kredensial asli Anda
@@ -41,10 +50,16 @@ pipeline perintah — semuanya dari satu terminal berwarna.
 ### 🌐 Unduh Media — `dl`
 ```
 dl <url>                Unduh video ke ~/Downloads/rydzzMedia/<Platform>/
+dl <url1> <url2> ...    Unduh batch beberapa url sekaligus (header [i/N])
 dl <url> -q             Audio saja (mp3)
-dl list                 Lihat semua file ter-unduh
-dl update               Update yt-dlp
+dl <url> --redo         Unduh ulang walau file sudah ada
+dl redo                 Daftar unduhan yang bisa diulang (tanpa hafal URL)
+dl redo <nomor|url>     Unduh ulang item nomor-N dari daftar / langsung pakai URL
 dl <url> --dry          Simulasi tanpa unduh
+dl list                 Lihat file ter-unduh (kolom adaptif)
+dl list -n 5            5 unduhan terbaru
+dl list -s              Urutkan dari ukuran terbesar
+dl update               Update yt-dlp
 ```
 - Ditenagai `yt-dlp`, otomatis dikelompokkan per platform:
   **YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, Twitch,
@@ -52,6 +67,8 @@ dl <url> --dry          Simulasi tanpa unduh
   Likee, Snapchat, Telegram, Discord, Spotify, TwitCasting**, lainnya →
   `Lainnya/`
 - Progress bar realtime (persen, kecepatan, ETA)
+- **Playlist/batch**: playlist ikut terunduh (tanpa `--no-playlist`) dan bisa
+  unduh banyak URL sekaligus dalam satu perintah
 - **URL Spotify** (track/album/playlist) diproses lewat `spotdl`
   (Spotify ber-DRM sehingga dicari di sumber audio lain)
 - Struktur folder otomatis menyesuaikan OS:
@@ -112,6 +129,7 @@ Salin `rydzzrc.template` ke `~/.rydzz_home/.rydzzrc`. Direktif yang tersedia:
 | --- | --- | --- |
 | `prompt color=` | `prompt color=purple` | Warna prompt (green, cyan, ...) |
 | `banner=` | `banner=false` | Tampilkan/abaikan banner startup |
+| `history=` | `history=false` | Matikan riwayat permanen antar-sesi |
 | `hidden=` | `hidden=true` | `ls` menampilkan file hidden default |
 | `auto_cd=` | `auto_cd=false` | Nonaktifkan auto-cd |
 | `alias=` | `alias=cl=clear` | Alias kustom |
@@ -126,9 +144,11 @@ Salin `rydzzrc.template` ke `~/.rydzz_home/.rydzzrc`. Direktif yang tersedia:
 ```
 Rydzz/
 ├── CLI.py                # Entry point (python3 CLI.py)
+├── pytest.ini            # Konfigurasi tes (testpaths)
+├── tests/                # Unit test (pytest)
 ├── rydzzrc.template      # Template konfigurasi ~/.rydzzrc
 └── rydzz/
-    ├── config.py         # State global: warna, protected files, loader rydzzrc
+    ├── config.py         # State global: warna, protected files, loader rydzzrc, history
     ├── commands.py       # ls -a/-l, tree, git shortcut, capture_ls
     ├── completions.py    # Tab completion (readline)
     ├── pipe.py           # Pipeline & redirect
@@ -137,6 +157,16 @@ Rydzz/
     ├── webclone.py       # wclone — klon halaman web → zip
     ├── ai.py             # RydzAgent — AI pemandu (Gemini, opsional)
     └── gadgets.py        # timer, stopwatch, calc, weather
+```
+
+## Testing
+
+Unit test ditulis dengan **pytest** (dependency dev saja — pemakaian shell tetap
+zero-dependency). Untuk menjalankan:
+
+```bash
+pip3 install pytest
+python3 -m pytest
 ```
 
 ## Lisensi

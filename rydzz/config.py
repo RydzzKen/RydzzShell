@@ -53,6 +53,11 @@ RESET = "\033[0m"
 
 COMMAND_HISTORY = []
 
+# --- Riwayat permanen antar-sesi ---
+HISTORY_FILE = os.path.join(CUSTOM_HOME, ".rydzz_history")
+HISTORY_LIMIT = 1000
+HISTORY_PERSIST = True
+
 # Alias yang dibaca dari ~/.bashrc (diisi saat shell start)
 USER_ALIASES = {}
 
@@ -116,6 +121,7 @@ CONFIG = {
     "banner": True,
     "hidden": False,
     "auto_cd": True,
+    "history": True,
     "ai": True,
     "ai_key": "",
     "ai_model": "",
@@ -196,9 +202,11 @@ def run_system_cmd_real_home(command):
     """
     env = {**os.environ, "HOME": REAL_HOME}
     try:
-        subprocess.run(command, shell=True, env=env)
+        result = subprocess.run(command, shell=True, env=env)
+        return result.returncode
     except KeyboardInterrupt:
         print("\n^C")
+        return None
     finally:
         reset_terminal()
 
@@ -224,6 +232,50 @@ def load_bashrc_aliases():
             print(f"Gagal membaca ~/.bashrc: {e}")
 
     return aliases
+
+
+def load_history():
+    """Membaca riwayat perintah antar-sesi dari file ke COMMAND_HISTORY."""
+    if not CONFIG.get("history", True):
+        return
+    if not os.path.exists(HISTORY_FILE):
+        return
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8", errors="replace") as f:
+            lines = [l.rstrip("\n") for l in f if l.strip()]
+    except Exception:
+        return
+    merged = []
+    for line in lines:
+        if merged and merged[-1] == line:
+            continue
+        merged.append(line)
+    COMMAND_HISTORY[:] = merged[-HISTORY_LIMIT:]
+
+
+def _flush_history_buffer():
+    """Menulis seluruh buffer COMMAND_HISTORY ke file riwayat."""
+    try:
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            for line in COMMAND_HISTORY[-HISTORY_LIMIT:]:
+                f.write(line + "\n")
+    except Exception:
+        pass
+
+
+def append_history(cmd):
+    """Menambahkan perintah ke buffer lalu menyimpannya (write-through)."""
+    if not CONFIG.get("history", True):
+        return
+    cmd = (cmd or "").strip()
+    if not cmd:
+        return
+    if COMMAND_HISTORY and COMMAND_HISTORY[-1] == cmd:
+        return
+    COMMAND_HISTORY.append(cmd)
+    if len(COMMAND_HISTORY) > HISTORY_LIMIT:
+        del COMMAND_HISTORY[:-HISTORY_LIMIT]
+    _flush_history_buffer()
 
 
 def get_git_branch():
@@ -267,6 +319,8 @@ def load_rydzzrc():
                 CONFIG["hidden"] = value.lower() in ("true", "1", "yes", "on")
             elif key == "auto_cd":
                 CONFIG["auto_cd"] = value.lower() in ("true", "1", "yes", "on")
+            elif key == "history":
+                CONFIG["history"] = value.lower() in ("true", "1", "yes", "on")
             elif key == "alias":
                 # format: alias=<name>=<command>
                 if "=" in value:

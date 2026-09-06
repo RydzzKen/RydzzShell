@@ -68,9 +68,12 @@ def _is_custom_ls(cmd):
     return cmd in ("ls", "dir")
 
 
-def execute_pipeline(cmd_str):
+def execute_pipeline(cmd_str, builtin_runner=None):
     """Menjalankan pipeline: cmd1 | cmd2 | ...
-    Custom 'ls' diproses secara internal (capture_ls), segmen lain lewat shell."""
+    Custom 'ls' diproses secara internal (capture_ls). Segmen lain dicoba ke
+    builtin_runner (callback ke builtin shell) dulu; jika None (bukan builtin)
+    jatuh ke subprocess shell.
+    """
     segments = split_pipes(cmd_str)
     if len(segments) == 1:
         # tidak benar-benar pipe, serahkan ke handler biasa
@@ -86,6 +89,12 @@ def execute_pipeline(cmd_str):
             # ls diproses internal, output jadi string
             args = arg.split() if arg else []
             output = commands.capture_ls(*args)
+        elif builtin_runner is not None:
+            captured = builtin_runner(seg)
+            if captured is not None:
+                output = captured
+            else:
+                output = _run_segment(seg, input_data=output)
         else:
             output = _run_segment(seg, input_data=output)
 

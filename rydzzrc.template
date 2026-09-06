@@ -16,6 +16,9 @@
 # Aktifkan auto-cd (ketik nama folder langsung pindah) (true/false)
 # auto_cd=true
 
+# Simpan riwayat perintah antar-sesi (true/false)
+# history=true
+
 # Definisikan alias khusus Rydzz: alias=<nama>=<perintah>
 # alias=cl=clear
 # alias=ll=ls -la

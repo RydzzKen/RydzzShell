@@ -50,6 +50,16 @@ def build_command_list():
     return sorted(cmds)
 
 
+def refresh():
+    """Paksa pembacaan ulang daftar command (alias baru dll).
+
+    Dipanggil setelah `source ~/.bashrc` / `source ~/.rydzzrc` agar tab
+    completion langsung memakai alias yang baru saja dimuat.
+    """
+    _PATH_CACHE.clear()
+    return build_command_list()
+
+
 def _complete_path(text, cwd):
     """Lengkapi nama file/folder di cwd."""
     base = os.path.dirname(text)
@@ -121,6 +131,21 @@ def setup_readline():
     _rl.set_completer(completer)
     _rl.set_completer_delims(" \t\n;")
     _rl.parse_and_bind("tab: menu-complete")
+
+
+def setup_readline_history():
+    """Muat riwayat readline dari file agar panah atas lintas-sesi jalan."""
+    global readline
+    if readline is None:
+        return
+    if not config.CONFIG.get("history", True):
+        return
+    try:
+        if os.path.exists(config.HISTORY_FILE):
+            readline.read_history_file(config.HISTORY_FILE)
+        readline.set_history_length(config.HISTORY_LIMIT)
+    except Exception:
+        pass
 
 
 # Simpan referensi readline untuk dipakai completer

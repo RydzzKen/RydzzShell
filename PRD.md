@@ -3,10 +3,10 @@
 | | |
 | --- | --- |
 | **Produk** | Rydzz — Custom Interactive Shell |
-| **Versi PRD** | 1.1 |
-| **Versi Produk** | 2.1 |
+| **Versi PRD** | 1.2 |
+| **Versi Produk** | 2.2 |
 | **Penulis** | RydzzKen |
-| **Status** | Diluncurkan (v2.1) |
+| **Status** | Diluncurkan (v2.2) |
 
 ---
 
@@ -71,15 +71,17 @@ sekaligus alat harian personal.
 | F21 | `wclone` web cloner | Klon halaman web → zip (HTML/CSS/JS/gambar/font), zero-dependency |
 | F22 | AI Pemandu RydzAgent | `ai` chat/tour/error (Gemini free, fakultatif), saran command offline |
 | F23 | Alat harian kecil | `timer` countdown, `stopwatch`, `calc` kalkulator aman (AST whitelist), `weather` (wttr.in tanpa key) |
+| F16 | Pipe ke builtin | `help \| grep` , `history \| grep`, `echo \| tr` — pipe memasuki builtin |
+| F17 | History permanen | Riwayat antar-sesi ke `~/.rydzz_home/.rydzz_history` (limit 1000, `history -c`) |
+| F18 | Alias export | Tab completion memuat alias `.bashrc`; di-refresh otomatis setelah `source` |
+| F19 | Batch/playlist `dl` | Unduh banyak URL `url1 url2 ...`, playlist tanpa `--no-playlist`, `--redo`, `dl list` kolom adaptif (-n/-s) |
+| F20 | Unit test | pytest untuk commands/tools/pipe/gadgets/history/completions |
 
-### P2 — Rencana
+### P2 — Rencana berikutnya
 | ID | Fitur | Keterangan |
 | --- | --- | --- |
-| F16 | Pipe ke builtin | `help \| grep`, `history \| grep` |
-| F17 | History permanen | Simpan riwayat antar-sesi ke file |
-| F18 | Alias export | Sinkronisasi alias dari `.bashrc` ke penyelesaian tab |
-| F19 | Download batch/playlist UI | Kemajuan per item di `dl list` |
-| F20 | Unit test | Pytest untuk commands/tools/pipe |
+| (terbuka) | Stack/task runner & konfigurasi skrip | Cuplik perintah berkali bahasa & plugin pengguna sebagai arah pengembangan lanjutan |
+| (terbuka) | Pipe dua arah / tee & sinkronisasi `.rydzzrc` | Redirect ke file dari pipe, integrasi lebih dalam dengan variabel lingkungan |
 
 ## 6. Arsitektur Teknis
 
@@ -138,8 +140,9 @@ sekaligus alat harian personal.
   tools `dl` (6+ platform, Spotify, folder per-OS), `qr`, `ascii`.
 - **v2.1** — `wclone` web cloner (F21), AI Pemandu RydzAgent (F22),
   alat harian kecil (F23): `timer`, `stopwatch`, `calc`, `weather`.
-- **v2.2 (rencana)** — sisa P2: pipe ke builtin (F16), history permanen
-  (F17), alias export (F18), UI batch/playlist di `dl` (F19), unit test (F20).
+- **v2.2** — Selesainya seluruh P2: pipe ke builtin (F16), history permanen
+  (F17), alias export / live refresh (F18), batch & playlist bersama
+  re-download serta `dl list` adaptif di `dl` (F19), unit test pytest (F20).
 
 ---
 
