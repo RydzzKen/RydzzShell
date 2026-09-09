@@ -30,7 +30,7 @@ STRINGS = {
 • sudo newpass             - Mengubah password Sudo khusus secara permanen
 • source ~/.bashrc         - Reload alias dari ~/.bashrc
 • alias / aliases          - Menampilkan alias yang dibaca dari ~/.bashrc
-• TG                       - Membuka Text Generator
+• TG                       - Text Generator (spam, random, fancy, ASCII, password, key)
 • dl <url>                 - Unduh video/lagu ke download/rydzzMedia
     dl <url1> <url2> ...     -   unduh batch beberapa url sekaligus
     dl <url> -q              -   audio saja (mp3)
@@ -66,6 +66,7 @@ STRINGS = {
 • serve [port] [folder]     - HTTP server buat kirim file
 • pick [query]              - Cari file interaktif (fuzzy)
 • task                      - Snippet perintah bernama (task save <nama> "<cmd>")
+• keystore <nama> <alias> - Buat Java keystore (.jks)
 
 --- SHORTCUT GIT ---
 • gs=status ga=add gl=log gb=branch gd=diff
@@ -151,8 +152,50 @@ STRINGS = {
     "tg.exit": "Ketik 'exit' pada teks untuk keluar!",
     "tg.input_text": "Masukkan Kata: ",
     "tg.input_count": "Masukkan Jumlah: ",
+    "tg.input_number": "Beri nomor tiap baris? (y/n): ",
+    "tg.input_separator": "Pemisah (n=baris baru, s=spasi, c=koma, atau custom): ",
+    "tg.input_delay": "Jeda antar baris dalam detik (kosongkan = tanpa jeda): ",
+    "tg.input_save": "Simpan ke file? (y/n): ",
+    "tg.input_filename": "Nama file (default tg_output.txt): ",
+    "tg.saved": "Hasil disimpan di: {path}",
     "tg.press_enter": "\nTekan Enter Untuk Lanjut...",
     "tg.count_error": "Jumlah Harus Berupa Angka!!",
+    "tg.bad_choice": "Pilihan tidak valid!",
+    "tg.input_choice": "Pilih mode: ",
+    "tg.input_length": "Panjang: ",
+    "tg.password_amount": "Berapa banyak? (default 1): ",
+    "tg.key_segments": "Segmen (default 4): ",
+    "tg.key_seglen": "Karakter per segmen (default 4): ",
+    "tg.menu": """[1] Spam Text (ulang)
+[2] Random Text Generator
+[3] Fancy Text / Unicode
+[4] ASCII Art Text
+[5] Password Generator
+[6] Key Generator
+[0] Keluar""",
+    "tg.random_menu": """[1] Nama Acak
+[2] Email Acak
+[3] Alamat Acak
+[4] Nomor Telepon Acak
+[0] Kembali""",
+    "tg.fancy_menu": """[1] Bold      [2] Italic
+[3] Script    [4] Fraktur
+[5] Double    [6] Sans
+[7] Mono      [8] Circled
+[9] Squared   [10] Full-width
+[0] Kembali""",
+    "tg.password_hint": """[1] Huruf Kecil
+[2] Huruf Besar
+[3] Angka
+[4] Simbol
+[5] Kecil + Besar
+[6] Kecil + Besar + Angka
+[7] Semua (Kecil + Besar + Angka + Simbol)
+[0] Kembali""",
+    "tg.key_menu": """[1] Key hex (0-9 A-F)
+[2] Key alfanumerik besar
+[3] Key alfanumerik campuran
+[0] Kembali""",
 
     # ---------- sudo ----------
     "sudo.old_pass": "Masukkan Sudo Password Lama: ",
@@ -337,6 +380,14 @@ STRINGS = {
     "kits.pick.empty": "pick: tidak ada file yang cocok",
     "kits.pick.prompt": "Pilih nomor: ",
     "kits.pick.invalid": "pick: pilihan tidak valid",
+
+    # ---------- keystore ----------
+    "keystore.usage": "Penggunaan: keystore create <nama> <alias> [path]",
+    "keystore.keytool_missing": "keytool tidak ditemukan. Install Java JDK untuk menggunakan fitur ini.",
+    "keystore.creating": "Membuat keystore di {path} dengan alias {alias}...",
+    "keystore.success": "Keystore berhasil dibuat di {path} (alias: {alias})",
+    "keystore.failed": "Gagal membuat keystore.",
+    "keystore.exists": "Keystore sudah ada di {path}.",
 
     # ---------- task runner ----------
     "kits.task.usage": "Guna: task | task save <nama> \"<cmd $1>\" | task <nama> <args...> | task del <nama>",

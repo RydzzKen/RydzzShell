@@ -2,6 +2,7 @@ import difflib
 import getpass
 import io
 import os
+import random
 import shutil
 import subprocess
 import sys
@@ -84,6 +85,20 @@ def handle_qr(arg):
     tools.gen_qr(" ".join(text_parts).strip("\"'"), out_file)
 
 
+def handle_keystore(arg):
+    args = arg.split() if arg else []
+    if not args or args[0] != "create":
+        print(t("keystore.usage"))
+        return
+    if len(args) < 3:
+        print(t("keystore.usage"))
+        return
+    name = args[1]
+    alias = args[2]
+    path = args[3] if len(args) > 3 else None
+    tools.create_keystore(name, alias, path)
+
+
 def handle_ascii(arg):
     args = arg.split() if arg else []
     if not args or args[0] not in ("enc", "encode", "dec", "decode"):
@@ -155,7 +170,101 @@ def handle_custom_ls(arg):
     commands.custom_ls(*args)
 
 
-def text_generator():
+_FANCY_STYLES = {
+    # style: (A-Z base, a-z base, 0-9 base or None)
+    "bold": (0x1D400, 0x1D41A, 0x1D7CE),        # math bold
+    "italic": (0x1D434, 0x1D44E, None),         # math italic (no digits)
+    "script": (0x1D49C, 0x1D4B6, None),         # math script (no digits)
+    "fraktur": (0x1D504, 0x1D51E, None),        # math fraktur (no digits)
+    "double": (0x1D538, 0x1D552, 0x1D7D8),      # double-struck
+    "sans": (0x1D5A0, 0x1D5BA, 0x1D7E2),        # sans-serif
+    "mono": (0x1D670, 0x1D68A, 0x1D7F6),        # monospace
+    "circled": (0x1F150, 0x24D0, None),         # circled A-Z/a-z (digits handled separately)
+    "squared": (0x1F130, 0x24B6, None),         # squared (no digit mapping)
+    "fullwidth": (0xFF21, 0xFF41, 0xFF10),      # full-width
+}
+
+_CIRCLED_DIGITS = ["0", "\u2460", "\u2461", "\u2462", "\u2463", "\u2464",
+                   "\u2465", "\u2466", "\u2467", "\u2468"]
+
+
+def _fancy_convert(text, style):
+    """Konversi teks ke gaya Unicode. Karakter tanpa mapping dibiarkan asli."""
+    if style not in _FANCY_STYLES or not text:
+        return text
+    ua, la, num = _FANCY_STYLES[style]
+    out = []
+    for ch in text:
+        code = ord(ch)
+        if "A" <= ch <= "Z":
+            out.append(chr(ua + (code - 0x41)))
+        elif "a" <= ch <= "z":
+            out.append(chr(la + (code - 0x61)))
+        elif "0" <= ch <= "9":
+            if style == "circled":
+                out.append(_CIRCLED_DIGITS[int(ch)])
+            elif num is not None:
+                out.append(chr(num + (code - 0x30)))
+            else:
+                out.append(ch)
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+_BLOCK_LETTERS = {
+    "A": [" ### ", "#   #", "#####", "#   #", "#   #"],
+    "B": ["#### ", "#   #", "#### ", "#   #", "#### "],
+    "C": [" ####", "#    ", "#    ", "#    ", " ####"],
+    "D": ["#### ", "#   #", "#   #", "#   #", "#### "],
+    "E": ["#####", "#    ", "#### ", "#    ", "#####"],
+    "F": ["#####", "#    ", "#### ", "#    ", "#    "],
+    "G": [" ####", "#    ", "#  ##", "#   #", " ####"],
+    "H": ["#   #", "#   #", "#####", "#   #", "#   #"],
+    "I": ["#####", "  #  ", "  #  ", "  #  ", "#####"],
+    "J": ["#####", "   # ", "   # ", "#  # ", " ##  "],
+    "K": ["#   #", "#  # ", "###  ", "#  # ", "#   #"],
+    "L": ["#    ", "#    ", "#    ", "#    ", "#####"],
+    "M": ["#   #", "## ##", "# # #", "#   #", "#   #"],
+    "N": ["#   #", "##  #", "# # #", "#  ##", "#   #"],
+    "O": [" ### ", "#   #", "#   #", "#   #", " ### "],
+    "P": ["#### ", "#   #", "#### ", "#    ", "#    "],
+    "Q": [" ### ", "#   #", "# # #", "#  # ", " ## #"],
+    "R": ["#### ", "#   #", "#### ", "#  # ", "#   #"],
+    "S": [" ####", "#    ", " ### ", "    #", "#### "],
+    "T": ["#####", "  #  ", "  #  ", "  #  ", "  #  "],
+    "U": ["#   #", "#   #", "#   #", "#   #", " ### "],
+    "V": ["#   #", "#   #", "#   #", " # # ", "  #  "],
+    "W": ["#   #", "#   #", "# # #", "## ##", "#   #"],
+    "X": ["#   #", " # # ", "  #  ", " # # ", "#   #"],
+    "Y": ["#   #", " # # ", "  #  ", "  #  ", "  #  "],
+    "Z": ["#####", "   # ", "  #  ", " #   ", "#####"],
+    "0": [" ### ", "#   #", "#   #", "#   #", " ### "],
+    "1": ["  #  ", " ##  ", "  #  ", "  #  ", "#####"],
+    "2": [" ### ", "#   #", "   # ", "  #  ", "#####"],
+    "3": ["#### ", "    #", " ### ", "    #", "#### "],
+    "4": ["   # ", "  ## ", " # # ", "#####", "   # "],
+    "5": ["#####", "#    ", "#### ", "    #", "#### "],
+    "6": [" ####", "#    ", "#####", "#   #", " ####"],
+    "7": ["#####", "    #", "   # ", "  #  ", "  #  "],
+    "8": [" ### ", "#   #", " ### ", "#   #", " ### "],
+    "9": [" ### ", "#   #", " ####", "    #", " ####"],
+    " ": ["   ", "   ", "   ", "   ", "   "],
+}
+
+
+def _block_art(text):
+    """Buat ASCII art block-style dari teks (huruf & angka kapital)."""
+    lines = ["" for _ in range(5)]
+    for ch in text.upper():
+        glyph = _BLOCK_LETTERS.get(ch, _BLOCK_LETTERS[" "])
+        for i in range(5):
+            lines[i] += glyph[i] + " "
+    return "\n".join(lines)
+
+
+def tg_spam():
+    """Mode spam text: ulang teks N kali, opsi nomor, pemisah, delay, simpan file."""
     while True:
         config.clear_screen()
         print(config.divider())
@@ -166,16 +275,243 @@ def text_generator():
             text = input(t("tg.input_text"))
             if text.lower() == "exit":
                 break
-            jumlah = int(input(t("tg.input_count")))
-            for i in range(1, jumlah + 1):
-                print(f"{i}. {text}")
-            input(t("tg.press_enter"))
-        except ValueError:
-            print(t("tg.count_error"))
-            input(t("tg.press_enter"))
+            jumlah = input(t("tg.input_count"))
+            if jumlah.lower() == "exit":
+                break
+            try:
+                jumlah = int(jumlah)
+            except ValueError:
+                print(t("tg.count_error"))
+                input(t("tg.press_enter"))
+                continue
+            number = input(t("tg.input_number"))
+            sep = input(t("tg.input_separator"))
+            sep = {"n": "\n", "s": " ", "c": ",", "/": ","}.get(sep.strip().lower(), sep.replace("\\n", "\n"))
+            delay = input(t("tg.input_delay"))
+            try:
+                delay = float(delay) if delay.strip() else 0.0
+            except ValueError:
+                delay = 0.0
+            numbered = number.strip().lower() == "y"
+            result = sep.join(f"{i}. {text}" if numbered else text for i in range(1, jumlah + 1))
+            print("\n" + "-" * 40)
+            if delay:
+                for i in range(1, jumlah + 1):
+                    print(f"{i}. {text}" if numbered else text, flush=True)
+                    time.sleep(delay)
+            else:
+                print(result)
+            print("-" * 40)
+            if input(t("tg.input_save")).strip().lower() == "y":
+                fname = input(t("tg.input_filename")).strip() or "tg_output.txt"
+                with open(fname, "w", encoding="utf-8") as f:
+                    f.write(result + "\n")
+                print(t("tg.saved").format(path=fname))
         except KeyboardInterrupt:
             print("\n^C")
             break
+        input(t("tg.press_enter"))
+
+
+_FIRST_NAMES = ["Andi", "Budi", "Citra", "Dewi", "Eko", "Fajar", "Gita", "Hadi", "Intan", "Joko",
+                "Kartika", "Lukas", "Maya", "Nanda", "Putri", "Rizky", "Sari", "Tono", "Umi", "Vina"]
+_LAST_NAMES = ["Pratama", "Saputra", "Wijaya", "Hidayat", "Santoso", "Kurniawan", "Nugroho",
+               "Susanti", "Lestari", "Permata", "Rahayu", "Firmansyah", "Anggraini", "Maulana"]
+_STREETS = ["Jl. Merdeka", "Jl. Sudirman", "Jl. Melati", "Jl. Kenanga", "Jl. Mawar", "Jl. Hasanuddin"]
+_CITIES = ["Jakarta", "Bandung", "Surabaya", "Medan", "Yogyakarta", "Semarang", "Makassar", "Malang"]
+_DOMAINS = ["gmail.com", "yahoo.com", "outlook.com", "protonmail.com", "example.com"]
+_PREFIXES = ["0812", "0813", "0852", "0856", "0895", "0821"]
+
+
+def tg_random():
+    """Mode random text generator: nama, email, alamat, telepon acak."""
+    while True:
+        config.clear_screen()
+        print(config.divider())
+        print(t("tg.title"))
+        print(config.divider() + "\n")
+        print(t("tg.random_menu") + "\n")
+        mode = input(t("tg.input_choice"))
+        if mode.lower() == "exit" or mode == "0":
+            break
+        try:
+            mode = int(mode)
+        except ValueError:
+            continue
+        try:
+            count = int(input(t("tg.input_count")))
+        except ValueError:
+            print(t("tg.count_error"))
+            input(t("tg.press_enter"))
+            continue
+        print()
+        for _ in range(count):
+            if mode == 1:
+                print(f"{random.choice(_FIRST_NAMES)} {random.choice(_LAST_NAMES)}")
+            elif mode == 2:
+                name = f"{random.choice(_FIRST_NAMES).lower()}{random.choice(_LAST_NAMES).lower()}"
+                print(f"{name}{random.randint(1, 99)}@{random.choice(_DOMAINS)}")
+            elif mode == 3:
+                num = random.randint(1, 999)
+                print(f"{random.choice(_STREETS)} No. {num}, {random.choice(_CITIES)}")
+            elif mode == 4:
+                print(f"+62 {random.choice(_PREFIXES)}-{random.randint(1000,9999)}-{random.randint(1000,9999)}")
+            else:
+                print(t("tg.bad_choice"))
+                break
+        input(t("tg.press_enter"))
+
+
+_FANCY_NAMES = {
+    "1": "bold", "2": "italic", "3": "script", "4": "fraktur",
+    "5": "double", "6": "sans", "7": "mono", "8": "circled",
+    "9": "squared", "10": "fullwidth",
+}
+
+
+def tg_fancy():
+    """Mode fancy text: ubah teks ke berbagai gaya Unicode."""
+    while True:
+        config.clear_screen()
+        print(config.divider())
+        print(t("tg.title"))
+        print(config.divider() + "\n")
+        print(t("tg.fancy_menu") + "\n")
+        style = input(t("tg.input_choice"))
+        if style.lower() == "exit" or style == "0":
+            break
+        if style not in _FANCY_NAMES:
+            print(t("tg.bad_choice"))
+            input(t("tg.press_enter"))
+            continue
+        text = input(t("tg.input_text"))
+        if text.lower() == "exit":
+            break
+        print("\n" + _fancy_convert(text, _FANCY_NAMES[style]) + "\n")
+        input(t("tg.press_enter"))
+
+
+def tg_ascii():
+    """Mode ascii art: teks jadi banner block-style buatan sendiri."""
+    while True:
+        config.clear_screen()
+        print(config.divider())
+        print(t("tg.title"))
+        print(config.divider() + "\n")
+        print(t("tg.exit") + "\n")
+        text = input(t("tg.input_text"))
+        if text.lower() == "exit":
+            break
+        print("\n" + _block_art(text) + "\n")
+        input(t("tg.press_enter"))
+
+
+_CHARS_LOWER = "abcdefghijklmnopqrstuvwxyz"
+_CHARS_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+_CHARS_DIGIT = "0123456789"
+_CHARS_SYMBOL = "!@#$%^&*()-_=+[]{};:,.<>?"
+
+
+def tg_password():
+    """Mode password generator."""
+    while True:
+        config.clear_screen()
+        print(config.divider())
+        print(t("tg.title"))
+        print(config.divider() + "\n")
+        print(t("tg.password_hint") + "\n")
+        options = {
+            "1": _CHARS_LOWER, "2": _CHARS_UPPER, "3": _CHARS_DIGIT,
+            "4": _CHARS_SYMBOL, "5": _CHARS_LOWER + _CHARS_UPPER,
+            "6": _CHARS_LOWER + _CHARS_UPPER + _CHARS_DIGIT,
+            "7": _CHARS_LOWER + _CHARS_UPPER + _CHARS_DIGIT + _CHARS_SYMBOL,
+        }
+        mode = input(t("tg.input_choice"))
+        if mode.lower() == "exit" or mode == "0":
+            break
+        if mode not in options:
+            print(t("tg.bad_choice"))
+            input(t("tg.press_enter"))
+            continue
+        try:
+            length = int(input(t("tg.input_length")))
+        except ValueError:
+            print(t("tg.count_error"))
+            input(t("tg.press_enter"))
+            continue
+        try:
+            amount = int(input(t("tg.password_amount")))
+        except ValueError:
+            amount = 1
+        charset = options[mode]
+        print()
+        for _ in range(amount):
+            print("".join(random.choice(charset) for _ in range(max(length, 1))))
+        input(t("tg.press_enter"))
+
+
+def tg_key():
+    """Mode key generator: license/product key atau token random."""
+    while True:
+        config.clear_screen()
+        print(config.divider())
+        print(t("tg.title"))
+        print(config.divider() + "\n")
+        print(t("tg.key_menu") + "\n")
+        mode = input(t("tg.input_choice"))
+        if mode.lower() == "exit" or mode == "0":
+            break
+        try:
+            segments = int(input(t("tg.key_segments")))
+        except ValueError:
+            segments = 4
+        try:
+            seg_len = int(input(t("tg.key_seglen")))
+        except ValueError:
+            seg_len = 4
+        if mode == "1":
+            chars = "0123456789ABCDEF"
+        elif mode == "2":
+            chars = _CHARS_UPPER + _CHARS_DIGIT
+        elif mode == "3":
+            chars = _CHARS_LOWER + _CHARS_UPPER + _CHARS_DIGIT
+        else:
+            print(t("tg.bad_choice"))
+            input(t("tg.press_enter"))
+            continue
+        parts = []
+        for _ in range(segments):
+            parts.append("".join(random.choice(chars) for _ in range(seg_len)))
+        print("\n" + "-".join(parts) + "\n")
+        input(t("tg.press_enter"))
+
+
+def text_generator():
+    """Menu utama Text Generator: pilih mode."""
+    while True:
+        config.clear_screen()
+        print(config.divider())
+        print(t("tg.title"))
+        print(config.divider() + "\n")
+        print(t("tg.menu") + "\n")
+        choice = input(t("tg.input_choice"))
+        if choice.lower() == "exit" or choice == "0":
+            break
+        if choice == "1":
+            tg_spam()
+        elif choice == "2":
+            tg_random()
+        elif choice == "3":
+            tg_fancy()
+        elif choice == "4":
+            tg_ascii()
+        elif choice == "5":
+            tg_password()
+        elif choice == "6":
+            tg_key()
+        else:
+            print(t("tg.bad_choice"))
+            input(t("tg.press_enter"))
 
 
 def handle_sudo(single_command):
@@ -264,6 +600,7 @@ def handle_sudo(single_command):
 PIPE_BUILTINS = {
     "help", "?", "list", "history", "echo", "alias", "aliases",
     "tree", "pwd", "cat", "calc", "ascii", "weather", "ai", "lang",
+    "keystore",
 }
 
 
@@ -614,6 +951,9 @@ def handle_command(single_command):
 
     elif cmd == "qr":
         handle_qr(arg)
+
+    elif cmd == "keystore":
+        handle_keystore(arg)
 
     elif cmd == "ascii":
         handle_ascii(arg)

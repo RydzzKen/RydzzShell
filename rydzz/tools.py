@@ -612,3 +612,60 @@ def ascii_decode(codes, base=10):
         except OverflowError:
             return t("ascii.decode_range", p=p)
     return "".join(out)
+
+
+# --- KEYSTORE ---
+KEYSTORE_DIR = config.CUSTOM_HOME
+
+
+def create_keystore(name, alias, path=None):
+    """Buat Java keystore (.jks) menggunakan keytool.
+
+    Jika path kosong, file disimpan di CUSTOM_HOME/<name>.jks.
+    """
+    keytool = shutil.which("keytool")
+    if not keytool:
+        print(t("keystore.keytool_missing"))
+        return False
+
+    if not name or not alias:
+        print(t("keystore.usage"))
+        return False
+
+    if not path:
+        path = os.path.join(KEYSTORE_DIR, f"{name}.jks")
+
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+
+    if os.path.exists(path):
+        print(t("keystore.exists", path=path))
+        return False
+
+    cmd = [
+        keytool,
+        "-genkey",
+        "-v",
+        "-alias", alias,
+        "-keyalg", "RSA",
+        "-keysize", "2048",
+        "-validity", "10000",
+        "-keystore", path,
+    ]
+
+    print(t("keystore.creating", path=path, alias=alias, name=name))
+    cmd_str = " ".join(f'"{c}"' for c in cmd)
+    env = {**os.environ, "HOME": config.REAL_HOME}
+    try:
+        import subprocess as _sp
+
+        result = _sp.run(cmd_str, shell=True, env=env,
+                          stdin=sys.__stdin__, stdout=sys.__stdout__, stderr=sys.__stderr__)
+        if result.returncode == 0:
+            print(t("keystore.success", path=path, alias=alias))
+            return True
+        else:
+            print(t("keystore.failed"))
+            return False
+    except KeyboardInterrupt:
+        print("\n^C")
+        return False

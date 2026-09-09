@@ -30,7 +30,7 @@ STRINGS = {
 • sudo newpass             - Permanently change the custom Sudo password
 • source ~/.bashrc         - Reload aliases from ~/.bashrc
 • alias / aliases          - Show aliases read from ~/.bashrc
-• TG                       - Open the Text Generator
+• TG                       - Text Generator (spam, random, fancy, ASCII, password, key)
 • dl <url>                 - Download video/music to download/rydzzMedia
     dl <url1> <url2> ...     -   batch-download several urls at once
     dl <url> -q              -   audio only (mp3)
@@ -66,6 +66,7 @@ STRINGS = {
 • serve [port] [folder]     - HTTP server for sharing files
 • pick [query]              - Interactive fuzzy file finder
 • task                      - Named snippets (task save <name> "<cmd>")
+• keystore <name> <alias>   - Create a Java keystore (.jks)
 
 --- GIT SHORTCUTS ---
 • gs=status ga=add gl=log gb=branch gd=diff
@@ -151,8 +152,50 @@ STRINGS = {
     "tg.exit": "Type 'exit' in the text to leave!",
     "tg.input_text": "Enter a Word: ",
     "tg.input_count": "Enter a Number: ",
+    "tg.input_number": "Number the lines? (y/n): ",
+    "tg.input_separator": "Separator (n=newline, s=space, c=comma, or custom): ",
+    "tg.input_delay": "Delay between lines in seconds (blank = no delay): ",
+    "tg.input_save": "Save to a file? (y/n): ",
+    "tg.input_filename": "Filename (default tg_output.txt): ",
+    "tg.saved": "Result saved to: {path}",
     "tg.press_enter": "\nPress Enter To Continue...",
     "tg.count_error": "The Number Must Be Digits!!",
+    "tg.bad_choice": "Invalid choice!",
+    "tg.input_choice": "Choose mode: ",
+    "tg.input_length": "Length: ",
+    "tg.password_amount": "How many? (default 1): ",
+    "tg.key_segments": "Segments (default 4): ",
+    "tg.key_seglen": "Characters per segment (default 4): ",
+    "tg.menu": """[1] Spam Text (repeat)
+[2] Random Text Generator
+[3] Fancy Text / Unicode
+[4] ASCII Art Text
+[5] Password Generator
+[6] Key Generator
+[0] Exit""",
+    "tg.random_menu": """[1] Random Name
+[2] Random Email
+[3] Random Address
+[4] Random Phone Number
+[0] Back""",
+    "tg.fancy_menu": """[1] Bold      [2] Italic
+[3] Script    [4] Fraktur
+[5] Double    [6] Sans
+[7] Mono      [8] Circled
+[9] Squared   [10] Full-width
+[0] Back""",
+    "tg.password_hint": """[1] Lowercase
+[2] Uppercase
+[3] Digits
+[4] Symbols
+[5] Lower + Upper
+[6] Lower + Upper + Digits
+[7] All (Lower + Upper + Digits + Symbols)
+[0] Back""",
+    "tg.key_menu": """[1] Hex key (0-9 A-F)
+[2] Upper alphanumeric key
+[3] Mixed alphanumeric key
+[0] Back""",
 
     # ---------- sudo ----------
     "sudo.old_pass": "Enter Old Sudo Password: ",
@@ -337,6 +380,14 @@ STRINGS = {
     "kits.pick.empty": "pick: no matching files",
     "kits.pick.prompt": "Choose a number: ",
     "kits.pick.invalid": "pick: invalid choice",
+
+    # ---------- keystore ----------
+    "keystore.usage": "Usage: keystore create <name> <alias> [path]",
+    "keystore.keytool_missing": "keytool not found. Install Java JDK to use this feature.",
+    "keystore.creating": "Creating keystore at {path} with alias {alias}...",
+    "keystore.success": "Keystore created successfully at {path} (alias: {alias})",
+    "keystore.failed": "Failed to create keystore.",
+    "keystore.exists": "Keystore already exists at {path}.",
 
     # ---------- task runner ----------
     "kits.task.usage": "Usage: task | task save <name> \"<cmd $1>\" | task <name> <args...> | task delete <name>",

@@ -15,6 +15,7 @@ BUILTIN_COMMANDS = [
     "gclone",
     # fitur baru
     "tree", "dl", "qr", "ascii", "wclone", "wcode",
+    "keystore",
     # AI pemandu
     "ai", "rydza",
     # alat harian
