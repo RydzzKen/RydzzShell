@@ -22,9 +22,13 @@ BUILTIN_COMMANDS = [
     "timer", "stopwatch", "calc", "weather",
     # multi-bahasa
     "lang",
+    # rename / pindah
+    "rn", "rename",
     # kit harian & task runner
     "trash", "bk", "backup", "hash", "freq", "clip", "todo",
     "serve", "pick", "task",
+    # deployment
+    "deploy", "dp",
 ]
 
 _PATH_CACHE = {}

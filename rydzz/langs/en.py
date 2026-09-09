@@ -14,6 +14,7 @@ STRINGS = {
 • mkdir <folder>           - Create a new folder
 • rm <file/folder>         - Delete a file or folder
 • mv <src> <dst>           - Move or rename a file/folder
+• rn <old> <new>           - Rename a file
 • cp <src> <dst>           - Copy a file or folder
 • cat / nano <file>        - Read / edit a text file
 • touch <file>             - Create/update a file timestamp
@@ -67,6 +68,7 @@ STRINGS = {
 • pick [query]              - Interactive fuzzy file finder
 • task                      - Named snippets (task save <name> "<cmd>")
 • keystore <name> <alias>   - Create a Java keystore (.jks)
+• deploy vercel [path] [--prod] - Deploy your project to Vercel (default: active folder)
 
 --- GIT SHORTCUTS ---
 • gs=status ga=add gl=log gb=branch gd=diff
@@ -214,6 +216,7 @@ STRINGS = {
 
     # ---------- file commands ----------
     "usage.mv": "Usage: mv <src> <dst>",
+    "usage.rn": "Usage: rn <old_name> <new_name>",
     "usage.cp": "Usage: cp <src> <dst>",
     "usage.mkdir": "Usage: mkdir <folder_name>",
     "usage.rm": "Usage: rm <file_or_folder_name>",
@@ -225,6 +228,7 @@ STRINGS = {
     "usage.source": "Usage: source ~/.bashrc or source ~/.rydzzrc",
     "ok.mv_dir": "'{src}' moved successfully into folder '{dst}'.",
     "ok.mv_rename": "'{src}' renamed successfully to '{dst}'.",
+    "ok.rn": "'{src}' renamed to '{dst}'.",
     "ok.cp": "'{src}' copied successfully to '{dst}'.",
     "ok.mkdir": "Folder '{arg}' created successfully.",
     "ok.rm_dir": "Folder '{arg}' deleted successfully.",
@@ -232,6 +236,9 @@ STRINGS = {
     "ok.touch": "File '{arg}' created/updated successfully.",
     "err.mv_dest_dir": "Error: Destination folder '{dst}' not found!",
     "err.mv_fail": "Failed to move: {e}",
+    "err.rn_dir": "Error: Cannot rename a folder with 'rn'. Use 'mv' instead.",
+    "err.rn_exists": "Error: Destination '{dst}' already exists!",
+    "err.rn_fail": "Failed to rename: {e}",
     "err.cp_fail": "Failed to copy: {e}",
     "err.cd_not_found": "Folder '{arg}' not found!",
     "err.cd_not_dir": "'{arg}' is not a folder!",
@@ -397,6 +404,24 @@ STRINGS = {
     "kits.task.not_found": "task: '{name}' not found",
     "kits.task.empty": "No snippets yet.",
     "kits.task.list_title": "Saved snippets:",
+
+    # ---------- deploy ----------
+    "deploy.usage": "Usage: deploy vercel [path] [--prod] [--help]\n    deploy vercel                  -> deploy current folder (preview)\n    deploy vercel /path/to/project -> deploy a specific folder\n    deploy vercel --prod           -> deploy to production\n    deploy dp <path> --prod        -> short alias",
+    "deploy.platform_unknown": "deploy: platform '{plat}' is unknown (only 'vercel' for now).",
+    "deploy.vercel_missing": "deploy: the 'vercel' CLI is not installed.",
+    "deploy.install_hint": "  Install it first: npm install -g vercel",
+    "deploy.not_dir": "deploy: '{path}' is not a folder",
+    "deploy.starting": "  Deploying {path} ➜ Vercel ({mode})...",
+    "deploy.mode_prod": "production",
+    "deploy.mode_preview": "preview",
+    "deploy.done_title": "  📦 Deployment complete!",
+    "deploy.no_url": "  Could not read the URL — check the dashboard: https://vercel.com/dashboard",
+    "deploy.exit_code": "vercel process exited with code {code}",
+    "deploy.failed": "  ✖ Failed: {e}",
+    "deploy.home_warn_custom": "deploy: '{home}' is the RydzzShell sandbox home — likely not the project folder you want to deploy.\n    cd into the project folder first, or pass a path: deploy vercel /path/to/project",
+    "deploy.home_warn_real": "deploy: caution — you are deploying your real home folder: {home}",
+    "deploy.not_logged_in": "deploy: The Vercel CLI is not logged in.",
+    "deploy.login_hint": "  Login first: vercel login\n  (or deploy temporarily without logging in: vercel deploy --temporary)",
 }
 
 # `ai tour` steps (title, description, example)
@@ -413,7 +438,7 @@ TOUR_STEPS = [
 
 # Feature summary for the AI prompt
 AI_OVERVIEW = """RYDZZ SHELL FEATURES:
-- Navigation: ls [-a/-l], tree, cd, pwd, mkdir, rm, mv, cp, cat, nano, touch
+- Navigation: ls [-a/-l], tree, cd, pwd, mkdir, rm, mv, rn, cp, cat, nano, touch
 - Git shortcut: gs, ga <add all>, gc <message>, gp, gpl, gl, gb, gd, gco <branch>, gst, gclone <url>
 - Media download: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <text> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
@@ -438,6 +463,7 @@ AI_TOPICS = {
     "mkdir": "create a new folder",
     "rm": "delete file/folder",
     "mv": "move/rename file",
+    "rn": "rename file",
     "cp": "copy file",
     "cat": "read a file's contents",
     "sudo": "sudo edit <file> for protected files",
@@ -453,4 +479,5 @@ AI_TOPICS = {
     "serve": "run an HTTP server: serve [port] [folder], for sharing files",
     "pick": "interactively find files with fuzzy match",
     "task": "named command snippets: task save <name> \"<cmd $1>\", task <name>",
+    "deploy": "deploy a project to Vercel: deploy vercel [path] [--prod], defaults to the active folder",
 }

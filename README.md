@@ -8,9 +8,10 @@ pipelining — all from one colorful terminal.
 > Version: **2.5** — Text Generator overhaul (spam, random, fancy, ASCII, password, key),
 > `keystore` (Java .jks), `wcode` alias for `wclone`, `rydza` alias for `ai`,
 > multi-language (English/Indonesian), persistent history,
-> pipes into builtins (incl. `| tee`), daily kits (`trash`, `backup`, `hash`,
-> `freq`, `clip`, `todo`, `serve`, `pick`), named `task` snippets, and unit
-> tests (pytest).
+> pipes into builtins (incl. `| tee`) and **real-time streaming** for pure
+> system pipelines (e.g. `curl | bash`), `deploy vercel` for deployment,
+> daily kits (`trash`, `backup`, `hash`, `freq`, `clip`, `todo`, `serve`,
+> `pick`), named `task` snippets, and unit tests (pytest).
 
 ![Version](https://img.shields.io/badge/Version-v2.5-2ea44f)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -30,7 +31,10 @@ pipelining — all from one colorful terminal.
   refreshed automatically after `source ~/.bashrc`
 - **Pipes** (`cmd1 | cmd2`) and **chaining** (`cmd1 && cmd2`) — pipes can now
   **enter builtins** (`help | grep`, `history | grep`, `echo | tr`, etc.);
-  append `| tee <file>` to also write the output to a file (`-a` to append)
+  append `| tee <file>` to also write the output to a file (`-a` to append).
+  Pipelines made only of system commands (e.g. `curl ... | bash`) are handed
+  to the OS shell and **stream output in real time** so you can watch
+  installation/progress live
 - Output **redirection** (`>` and `>>`)
 - **`restart`** — reload the shell instantly without exiting (state stays
   fresh, e.g. right after changing `.rydzzrc` or `lang`)
@@ -131,6 +135,19 @@ dl update               Update yt-dlp
 - All output (help, banner, command feedback, AI, dl/qr/ascii, etc.) follows
   the selected language; add a new language pack in `rydzz/langs/`
 
+### 🚀 Deployment — `deploy`
+- `deploy vercel` — deploy the **current folder** to Vercel (preview)
+- `deploy vercel <path>` — deploy a specific folder
+- `deploy vercel --prod` (alias `-p`) — deploy to **production**
+- `deploy dp <path> --prod` — short alias (`dp`)
+- Output streams **live** during the build; on success the latest deployment
+  URLs are shown in a green box (grabbed from `vercel ls`)
+- Guards: refuses the RydzzShell sandbox home, warns about the real home
+  folder, and tells you to run `vercel login` (or `vercel deploy --temporary`)
+  if the CLI isn't authenticated
+- Requires the official CLI: `npm install -g vercel`; credentials are read
+  from your real home so you log in only once
+
 ### 🧰 Daily Tools
 - `timer <seconds|mm:ss>` — countdown (e.g. `timer 90`, `timer 2:30`),
   rings when finished, Ctrl+C to cancel
@@ -228,6 +245,7 @@ Rydzz/
     ├── pipe.py           # Pipeline & redirection
     ├── shell.py          # Main REPL loop, dispatch, help
     ├── tools.py          # dl (yt-dlp/spotdl), qr (segno), ascii
+    ├── deploy.py         # deploy <platform> — Vercel CLI wrapper & status
     ├── webclone.py       # wclone — web page cloner → zip
     ├── ai.py             # RydzAgent — AI guide (Gemini, optional)
     ├── gadgets.py        # timer, stopwatch, calc, weather

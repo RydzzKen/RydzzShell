@@ -13,7 +13,7 @@ try:
 except ImportError:
     readline = None
 
-from . import ai, commands, completions, config, gadgets, i18n, kits, pipe, snippets, tools, webclone
+from . import ai, commands, completions, config, deploy, gadgets, i18n, kits, pipe, snippets, tools, webclone
 from .i18n import t
 
 
@@ -97,6 +97,20 @@ def handle_keystore(arg):
     alias = args[2]
     path = args[3] if len(args) > 3 else None
     tools.create_keystore(name, alias, path)
+
+
+def handle_deploy(arg):
+    args = arg.split() if arg else []
+    if not args:
+        print(t("deploy.usage"))
+        return
+    platform = args[0].lower()
+    rest = " ".join(args[1:])
+    if platform == "vercel":
+        deploy.vercel_deploy(rest)
+    else:
+        print(t("deploy.platform_unknown", plat=platform))
+        print(t("deploy.usage"))
 
 
 def handle_ascii(arg):
@@ -600,8 +614,12 @@ def handle_sudo(single_command):
 PIPE_BUILTINS = {
     "help", "?", "list", "history", "echo", "alias", "aliases",
     "tree", "pwd", "cat", "calc", "ascii", "weather", "ai", "lang",
-    "keystore",
+    "keystore", "rn", "rename",
 }
+
+# Beritahu pipe.py nama-nama builtin ini agar pipeline murni perintah sistem
+# (mis. curl | bash) bisa di-stream real-time, bukan di-capture.
+pipe.register_builtin_names(PIPE_BUILTINS)
 
 
 def _run_builtin_capture(seg):
@@ -625,7 +643,11 @@ def handle_command(single_command):
 
     # --- PIPE SUPPORT ---
     if pipe.has_pipe(single_command) and len(pipe.split_pipes(single_command)) > 1:
-        pipe.execute_pipeline(single_command, builtin_runner=_run_builtin_capture)
+        pipe.execute_pipeline(
+            single_command,
+            builtin_runner=_run_builtin_capture,
+            stream_system=True,
+        )
         return
 
     # --- REDIRECT SUPPORT (> dan >>) ---
@@ -734,6 +756,29 @@ def handle_command(single_command):
                 return
         else:
             print(t("usage.mv"))
+
+    elif cmd in ["rn", "rename"]:
+        args = arg.split(maxsplit=1)
+        if len(args) == 2:
+            src, dst = args[0], args[1]
+            if os.path.exists(src):
+                if os.path.isdir(src):
+                    print(t("err.rn_dir", src=src))
+                    return
+                if os.path.exists(dst):
+                    print(t("err.rn_exists", dst=dst))
+                    return
+                try:
+                    os.rename(src, dst)
+                    print(t("ok.rn", src=src, dst=dst))
+                except Exception as e:
+                    print(t("err.rn_fail", e=e))
+                    return
+            else:
+                print(t("err.src_not_found", src=src))
+                return
+        else:
+            print(t("usage.rn"))
 
     elif cmd == "cp":
         args = arg.split(maxsplit=1)
@@ -1002,6 +1047,9 @@ def handle_command(single_command):
 
     elif cmd == "pick":
         kits.pick(arg)
+
+    elif cmd in ("deploy", "dp"):
+        handle_deploy(arg)
 
     elif cmd == "task":
         snippets.task(arg, runner=handle_command)

@@ -87,6 +87,8 @@ Built as a learning project and a personal daily driver.
 | F30 | `keystore` | Create Java keystore (.jks) via `keytool` (requires JDK) |
 | F31 | `wcode` alias | Alias for `wclone` command |
 | F32 | `rydza` alias | Alias for `ai` command (RydzAgent) |
+| F33 | `deploy vercel` | Deploy current/selected folder to Vercel via the official CLI; `--prod` for production, `dp` short alias, live-streamed build output, latest URLs from `vercel ls`, guards for sandbox/real home + auth check (`vercel login`) |
+| F34 | System pipeline streaming | Pipes made only of system commands (e.g. `curl \| bash`) are handed to the OS shell and stream output live instead of being captured until completion — installers/progress stay visible |
 
 ### P2 — Next up
 | ID | Feature | Description |
@@ -103,7 +105,11 @@ Built as a learning project and a personal daily driver.
     (`run_system_cmd`, `run_system_cmd_real_home`).
   - `commands.py` — `ls`/`tree`/`capture_ls`, git shortcuts.
   - `completions.py` — tab completion (readline).
-  - `pipe.py` — pipeline execution + real-home env for `gh`/`git`.
+  - `pipe.py` — pipeline execution + real-home env for `gh`/`git`;
+    streaming fast-path for system-only pipelines (`PIPE_BUILTIN_NAMES`
+    registered by `shell.py`, `stream_system=True`).
+  - `deploy.py` — `deploy vercel` (F33): CLI detection, arg parsing,
+    Vercel auth check, live deploy + `vercel ls` URL extraction.
   - `shell.py` — REPL loop, dispatch, help, alias, TG (text generator),
     `lang` handler.
   - `tools.py` — downloader (`yt-dlp`/`spotdl`), QR (`segno`), ASCII.
@@ -122,8 +128,9 @@ Built as a learning project and a personal daily driver.
   - `langs/` — language packs (`id.py`, `en.py`, ...).
 - **Optional dependencies:** `yt-dlp` (F10), `segno` (F12), `spotdl` (F11),
    `requests`, `beautifulsoup4`, `prompt_toolkit`, `textual` (F21,
-   enhanced tools), and a Gemini API key (F22, optional — without a
-   key it runs the offline fallback). Shell core runs with zero
+   enhanced tools), a Gemini API key (F22, optional — without a
+   key it runs the offline fallback), and the official Vercel CLI
+   (`npm i -g vercel`) for `deploy vercel` (F33). Shell core runs with zero
    dependencies.
 - **HOME flow:** `REAL_HOME` is captured before override; the shell runs in
   `CUSTOM_HOME` (`~/.rydzz_home`); `gh`/`git`/`yt-dlp`/`spotdl` commands run
@@ -175,6 +182,9 @@ Built as a learning project and a personal daily driver.
 - **v2.4** — daily kits (F25): `trash`, `bk`/`backup`, `hash`, `freq`,
    `clip`, `todo`; `serve` & `pick` (F26); `task` snippet runner (F27);
    `| tee` pipes & `env=` config (F28); `restart` (F29); new 2.4 banner.
+- **v2.6** — deployment: `deploy vercel` (F33) with auth guards & live URL
+   display; system-pipeline real-time streaming (F34) so `curl | bash`
+   and similar show progress live.
 
 ---
 

@@ -64,21 +64,70 @@ def _run_segment(shell_command, input_data=None):
         return f"Error: {e}"
 
 
+# Nama-nama builtin yang boleh dipipe (didaftarkan shell.py).
+# Dipakai untuk memutuskan apakah sebuah pipeline bisa di-stream langsung
+# (semua segmen perintah sistem) tanpa lewat capture Python.
+PIPE_BUILTIN_NAMES = set()
+
+
+def register_builtin_names(names):
+    """Daflarkan nama builtin yang bisa dipipe (dipanggil dari shell.py)."""
+    PIPE_BUILTIN_NAMES.update(names)
+
+
+def is_builtin_segment(seg):
+    """True bila segmen ditangani builtin/custom-ls (bukan perintah sistem)."""
+    parts = seg.split(maxsplit=1)
+    cmd = parts[0] if parts else ""
+    if _is_custom_ls(cmd):
+        return True
+    return cmd in PIPE_BUILTIN_NAMES
+
+
+def _run_pipeline_stream(cmd_str):
+    """Jalankan pipeline penuh lewat OS shell, output streaming real-time.
+
+    Dipakai saat semua segmen adalah perintah sistem (mis. curl | bash):
+    tidak ada kebutuhan menangkap output di Python, jadi biarkan OS shell
+    yang menyambungkan antar-proses supaya progress instalasi langsung
+    terlihat di layar.
+    """
+    first_word = cmd_str.split()[0] if cmd_str.split() else ""
+    env = None
+    if first_word in ("gh", "git"):
+        env = {**os.environ, "HOME": config.REAL_HOME}
+    try:
+        subprocess.run(cmd_str, shell=True, env=env)
+    except KeyboardInterrupt:
+        print("\n^C")
+    finally:
+        config.reset_terminal()
+
+
 def _is_custom_ls(cmd):
     return cmd in ("ls", "dir")
 
 
-def execute_pipeline(cmd_str, builtin_runner=None):
+def execute_pipeline(cmd_str, builtin_runner=None, stream_system=False):
     """Menjalankan pipeline: cmd1 | cmd2 | ...
     Custom 'ls' diproses secara internal (capture_ls). Segmen lain dicoba ke
     builtin_runner (callback ke builtin shell) dulu; jika None (bukan builtin)
     jatuh ke subprocess shell.
     `... | tee <file>` di akhir menulis output ke file sekaligus ke layar.
+
+    `stream_system=True`: bila SEMUA segmen adalah perintah sistem (bukan
+    builtin, mis. curl | bash), pipeline langsung dilimpahkan ke OS shell
+    dengan output streaming real-time — tidak ditangkap ke string Python.
     """
     segments = split_pipes(cmd_str)
     if len(segments) == 1:
         # tidak benar-benar pipe, serahkan ke handler biasa
         return None
+
+    # Fast-path streaming: pipeline murni perintah sistem (curl | bash, dst.)
+    if stream_system and all(not is_builtin_segment(s) for s in segments):
+        _run_pipeline_stream(cmd_str)
+        return True
 
     tee_file = None
     tee_append = False

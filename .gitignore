@@ -4,3 +4,4 @@ __pycache__/
 .rydzz_home/
 .rydzzrc
 workspace/
+.env

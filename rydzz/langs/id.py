@@ -14,6 +14,7 @@ STRINGS = {
 • mkdir <folder>           - Membuat folder baru
 • rm <file/folder>         - Menghapus file atau folder
 • mv <asal> <tujuan>       - Pindah atau rename file/folder
+• rn <lama> <baru>          - Rename file
 • cp <asal> <tujuan>       - Menyalin file atau folder
 • cat / nano <file>        - Baca / edit file teks
 • touch <file>             - Membuat/update timestamp file
@@ -67,6 +68,7 @@ STRINGS = {
 • pick [query]              - Cari file interaktif (fuzzy)
 • task                      - Snippet perintah bernama (task save <nama> "<cmd>")
 • keystore <nama> <alias> - Buat Java keystore (.jks)
+• deploy vercel [path] [--prod] - Deploy project ke Vercel (default: folder aktif)
 
 --- SHORTCUT GIT ---
 • gs=status ga=add gl=log gb=branch gd=diff
@@ -214,6 +216,7 @@ STRINGS = {
 
     # ---------- file commands ----------
     "usage.mv": "Guna: mv <asal> <tujuan>",
+    "usage.rn": "Guna: rn <nama_lama> <nama_baru>",
     "usage.cp": "Guna: cp <asal> <tujuan>",
     "usage.mkdir": "Guna: mkdir <nama_folder>",
     "usage.rm": "Guna: rm <nama_file_atau_folder>",
@@ -225,6 +228,7 @@ STRINGS = {
     "usage.source": "Guna: source ~/.bashrc atau source ~/.rydzzrc",
     "ok.mv_dir": "'{src}' berhasil dipindahkan ke folder '{dst}'.",
     "ok.mv_rename": "'{src}' berhasil di-rename menjadi '{dst}'.",
+    "ok.rn": "'{src}' berhasil di-rename menjadi '{dst}'.",
     "ok.cp": "'{src}' berhasil disalin ke '{dst}'.",
     "ok.mkdir": "Folder '{arg}' berhasil dibuat.",
     "ok.rm_dir": "Folder '{arg}' berhasil dihapus.",
@@ -232,6 +236,9 @@ STRINGS = {
     "ok.touch": "File '{arg}' berhasil dibuat/diperbarui.",
     "err.mv_dest_dir": "Error: Folder tujuan '{dst}' tidak ditemukan!",
     "err.mv_fail": "Gagal memindahkan: {e}",
+    "err.rn_dir": "Error: Folder tidak bisa di-rename dengan 'rn'. Gunakan 'mv' saja.",
+    "err.rn_exists": "Error: '{dst}' sudah ada!",
+    "err.rn_fail": "Gagal meng-rename: {e}",
     "err.cp_fail": "Gagal menyalin: {e}",
     "err.cd_not_found": "Folder '{arg}' tidak ditemukan!",
     "err.cd_not_dir": "'{arg}' bukan sebuah folder!",
@@ -397,6 +404,24 @@ STRINGS = {
     "kits.task.not_found": "task: '{name}' tidak ditemukan",
     "kits.task.empty": "Belum ada snippet.",
     "kits.task.list_title": "Snippet tersimpan:",
+
+    # ---------- deploy ----------
+    "deploy.usage": "Penggunaan: deploy vercel [path] [--prod] [--help]\n    deploy vercel                    -> deploy folder aktif (preview)\n    deploy vercel /path/ke/project   -> deploy folder spesifik\n    deploy vercel --prod             -> deploy ke production\n    deploy dp <path> --prod          -> alias singkat",
+    "deploy.platform_unknown": "deploy: platform '{plat}' tidak dikenal (saat ini hanya 'vercel').",
+    "deploy.vercel_missing": "deploy: CLI 'vercel' tidak ditemukan.",
+    "deploy.install_hint": "  Install dulu: npm install -g vercel",
+    "deploy.not_dir": "deploy: '{path}' bukan folder",
+    "deploy.starting": "  Deploying {path} ➜ Vercel ({mode})...",
+    "deploy.mode_prod": "production",
+    "deploy.mode_preview": "preview",
+    "deploy.done_title": "  📦 Deployment selesai!",
+    "deploy.no_url": "  URL tidak terbaca — cek dashboard: https://vercel.com/dashboard",
+    "deploy.exit_code": "proses vercel keluar dengan kode {code}",
+    "deploy.failed": "  ✖ Gagal: {e}",
+    "deploy.home_warn_custom": "deploy: '{home}' adalah home sandbox RydzzShell — kemungkinan besar bukan folder project yang mau di-deploy.\n    cd dulu ke folder project, atau beri path: deploy vercel /path/ke/project",
+    "deploy.home_warn_real": "deploy: perhatian — kamu men-deploy folder home asli: {home}",
+    "deploy.not_logged_in": "deploy: Vercel CLI belum login.",
+    "deploy.login_hint": "  Login dulu: vercel login\n  (atau deploy sementara tanpa login: vercel deploy --temporary)",
 }
 
 # Langkah `ai tour` (judul, deskripsi, contoh)
@@ -413,7 +438,7 @@ TOUR_STEPS = [
 
 # Ringkasan fitur untuk prompt AI
 AI_OVERVIEW = """FEATUR RYDZZ SHELL:
-- Navigasi: ls [-a/-l], tree, cd, pwd, mkdir, rm, mv, cp, cat, nano, touch
+- Navigasi: ls [-a/-l], tree, cd, pwd, mkdir, rm, mv, rn, cp, cat, nano, touch
 - Git shortcut: gs, ga <semua add>, gc <pesan>, gp, gpl, gl, gb, gd, gco <branch>, gst, gclone <url>
 - Unduh media: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <teks> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
@@ -438,6 +463,7 @@ AI_TOPICS = {
     "mkdir": "buat folder baru",
     "rm": "hapus file/folder",
     "mv": "pindah/rename file",
+    "rn": "rename file",
     "cp": "salin file",
     "cat": "baca isi file",
     "sudo": "sudo edit <file> untuk file terproteksi",
@@ -453,4 +479,5 @@ AI_TOPICS = {
     "serve": "jalankan HTTP server: serve [port] [folder], buat kirim file",
     "pick": "cari file interaktif dengan fuzzy match",
     "task": "snippet perintah bernama: task save <nama> \"<cmd $1>\", task <nama>",
+    "deploy": "deploy project ke Vercel: deploy vercel [path] [--prod], defaultnya folder aktif",
 }
