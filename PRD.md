@@ -3,19 +3,20 @@
 | | |
 | --- | --- |
 | **Product** | Rydzz — Custom Interactive Shell |
-| **PRD Version** | 1.4 |
-| **Product Version** | 2.4 |
+| **PRD Version** | 1.5 |
+| **Product Version** | 2.5 |
 | **Author** | RydzzKen |
-| **Status** | Launched (v2.4) |
+| **Status** | Launched (v2.5) |
 
 ---
 
 ## 1. Executive Summary
 
 Rydzz is a custom interactive shell written in pure Python. It combines file
-utilities, git management, social media downloads, QR codes, and data
-conversion into a single colorful, user-friendly terminal interface. Built as
-a learning project and a personal daily driver.
+utilities, git management, social media downloads, QR codes, data
+conversion, and a full Text Generator (spam, random, fancy, ASCII,
+password, key) into a single colorful, user-friendly terminal interface.
+Built as a learning project and a personal daily driver.
 
 ## 2. Goals
 
@@ -70,7 +71,7 @@ a learning project and a personal daily driver.
 | F14 | Git/gh real auth | Real credentials carried only for specific commands |
 | F15 | `sudo newpass` / `sudo edit` | Protected secret files |
 | F21 | `wclone` web cloner | Clone web page → zip (HTML/CSS/JS/images/fonts), zero-dependency |
-| F22 | RydzAgent AI Guide | `ai` chat/tour/error (free Gemini, optional), offline command suggestions |
+| F22 | RydzAgent AI Guide | `ai` / `rydza` chat/tour/error (free Gemini, optional), offline command suggestions |
 | F23 | Small daily tools | `timer` countdown, `stopwatch`, `calc` safe calculator (AST whitelist), `weather` (wttr.in, no key) |
 | F16 | Pipe into builtins | `help \| grep`, `history \| grep`, `echo \| tr` — pipes enter builtins |
 | F17 | Persistent history | Cross-session history to `~/.rydzz_home/.rydzz_history` (limit 1000, `history -c`) |
@@ -83,6 +84,9 @@ a learning project and a personal daily driver.
 | F27 | `task` runner | Named snippets (JSON at `~/.rydzz_home/.rydzz_snippets`), `$1..$n` / `$@` substitution, result re-dispatched through the shell (chaining/pipes/aliases work inside snippets) |
 | F28 | Tee pipes & `env=` config | `cmd \| tee <file>` (with `-a` append) captures builtin output too; `env=KEY=VALUE` in `.rydzzrc` sets environment variables for the shell & children |
 | F29 | `restart` | Reload the shell instantly without exiting (fresh state) |
+| F30 | `keystore` | Create Java keystore (.jks) via `keytool` (requires JDK) |
+| F31 | `wcode` alias | Alias for `wclone` command |
+| F32 | `rydza` alias | Alias for `ai` command (RydzAgent) |
 
 ### P2 — Next up
 | ID | Feature | Description |
@@ -117,8 +121,10 @@ a learning project and a personal daily driver.
     sniffer per language).
   - `langs/` — language packs (`id.py`, `en.py`, ...).
 - **Optional dependencies:** `yt-dlp` (F10), `segno` (F12), `spotdl` (F11),
-  and a Gemini API key (F22, optional — without a key it runs the offline
-  fallback). Shell core runs with zero dependencies.
+   `requests`, `beautifulsoup4`, `prompt_toolkit`, `textual` (F21,
+   enhanced tools), and a Gemini API key (F22, optional — without a
+   key it runs the offline fallback). Shell core runs with zero
+   dependencies.
 - **HOME flow:** `REAL_HOME` is captured before override; the shell runs in
   `CUSTOM_HOME` (`~/.rydzz_home`); `gh`/`git`/`yt-dlp`/`spotdl` commands run
   with `HOME=REAL_HOME` via `run_system_cmd_real_home`.
@@ -162,9 +168,13 @@ a learning project and a personal daily driver.
   re-download plus adaptive `dl list` in `dl` (F19), pytest unit tests (F20).
 - **v2.3** — multi-language (F24): `lang` command, `rydzz/i18n.py` engine,
   language packs under `rydzz/langs/`, English default, `lang=` config key.
+- **v2.5** — Text Generator overhaul (F: spam, random, fancy, ASCII,
+   password, key generator), `keystore` (F30), `wcode` alias (F31),
+   `rydza` alias (F32). New dependencies: requests, beautifulsoup4,
+   prompt_toolkit, textual.
 - **v2.4** — daily kits (F25): `trash`, `bk`/`backup`, `hash`, `freq`,
-  `clip`, `todo`; `serve` & `pick` (F26); `task` snippet runner (F27);
-  `| tee` pipes & `env=` config (F28); `restart` (F29); new 2.4 banner.
+   `clip`, `todo`; `serve` & `pick` (F26); `task` snippet runner (F27);
+   `| tee` pipes & `env=` config (F28); `restart` (F29); new 2.4 banner.
 
 ---
 

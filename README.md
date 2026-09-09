@@ -5,12 +5,14 @@ Built as a learning project and a daily driver: file navigation, git
 management, media downloads, QR codes, ASCII conversion, and command
 pipelining — all from one colorful terminal.
 
-> Version: **2.4** — multi-language (English/Indonesian), persistent history,
+> Version: **2.5** — Text Generator overhaul (spam, random, fancy, ASCII, password, key),
+> `keystore` (Java .jks), `wcode` alias for `wclone`, `rydza` alias for `ai`,
+> multi-language (English/Indonesian), persistent history,
 > pipes into builtins (incl. `| tee`), daily kits (`trash`, `backup`, `hash`,
 > `freq`, `clip`, `todo`, `serve`, `pick`), named `task` snippets, and unit
 > tests (pytest).
 
-![Version](https://img.shields.io/badge/Version-v2.4-2ea44f)
+![Version](https://img.shields.io/badge/Version-v2.5-2ea44f)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Dependency](https://img.shields.io/badge/Core-Zero%20dependency-6f42c1)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%E2%80%A2%20Termux%20%E2%80%A2%20macOS%20%E2%80%A2%20Windows-brightgreen)
@@ -107,8 +109,16 @@ dl update               Update yt-dlp
 ### 🌼 Small Tools
 - `qr <text> [-o file.png|svg]` — QR code in terminal, saveable to file
 - `ascii enc|dec [-x|-b]` — ASCII decimal/hex/binary conversion
-- `wclone <url>` — clone a web page (HTML/CSS/JS/images/fonts) to a `.zip`
+- `wclone <url>` (alias `wcode`) — clone a web page (HTML/CSS/JS/images/fonts) to a `.zip`
   in `~/Downloads/rydzzWeb/`
+- `TG` — Text Generator with interactive menu:
+  - **Spam** — repeat text with numbering, separator, delay, save to file
+  - **Random** — random name, email, address, phone number
+  - **Fancy** — bold, italic, script, fraktur, double, sans, mono, circled, squared, fullwidth
+  - **ASCII Art** — text to ASCII art
+  - **Password** — generate passwords (lowercase, uppercase, digits, symbols, combos)
+  - **Key** — generate hex, alphanumeric, or mixed keys
+  - Save results to file, customizable separator and delay
 
 ### 🌍 Multi-language
 - `lang` — show active language + usage
@@ -146,19 +156,21 @@ dl update               Update yt-dlp
 - `serve [port] [folder] [-b]` — HTTP server to share files over Wi-Fi/phone;
   runs in the foreground or in the background with `-b`
 - `pick [query]` — interactive fuzzy file picker
+- `keystore <name> <alias> [path]` — create a Java keystore (.jks) using
+   `keytool` (requires Java JDK); stores in `~/.rydzz_home/` by default
 - `task` — named snippets: `task save <name> "<cmd $1>"`, `task <name> <args>`,
-  `task list`, `task del <name>`. Placeholders `$1..$n` and `$@` are
-  substituted and the result runs back through the normal shell (chaining,
-  pipes, aliases all work inside a snippet)
+   `task list`, `task del <name>`. Placeholders `$1..$n` and `$@` are
+   substituted and the result runs back through the normal shell (chaining,
+   pipes, aliases all work inside a snippet)
 
 ### 🤖 AI Guide — RydzAgent
-- `ai <question>` — ask anything (free Gemini, follows the shell language)
-- `ai tour` — interactive tour of shell features
-- `ai error` — explain the last command's error (manual, privacy-safe)
+- `ai` / `rydza <question>` — ask anything (free Gemini, follows the shell language)
+- `ai tour` / `rydza tour` — interactive tour of shell features
+- `ai error` / `rydza error` — explain the last command's error (manual, privacy-safe)
 - `Command Not Found: xxx` → nearest command automatically suggested (offline)
 - `.rydzzrc` config: `ai=`, `ai key=`, `ai model=`, `ai base=`, `ai nama=`
-  (free key at https://aistudio.google.com/apikey; without a key it still
-  works as an offline guide)
+   (free key at https://aistudio.google.com/apikey; without a key it still
+   works as an offline guide)
 
 ### 🔌 System Integration
 `git`, `curl`, `wget`, `ssh`/`sshd`, `ping`, `gh`, `pip`, `node`, `df`,
@@ -170,8 +182,8 @@ dl update               Update yt-dlp
 ## Installation
 
 ```bash
-# Prerequisites: Python 3.10+; optional download tools:
-pip3 install -U yt-dlp segno spotdl
+# Prerequisites: Python 3.10+; optional download/tools:
+pip3 install -U yt-dlp segno spotdl requests beautifulsoup4 prompt_toolkit textual
 
 git clone https://github.com/RydzzKen/Rydzz.git
 cd Rydzz
