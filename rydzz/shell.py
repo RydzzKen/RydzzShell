@@ -1,6 +1,8 @@
+import base64
 import difflib
 import getpass
 import io
+import json
 import os
 import random
 import re
@@ -115,7 +117,7 @@ def handle_deploy(arg):
         print(t("deploy.usage"))
 
 
-UPSTREAM_RAW_BASE = "https://raw.githubusercontent.com/RydzzKen/RydzzShell/main/"
+UPSTREAM_API_BASE = "https://api.github.com/repos/RydzzKen/RydzzShell/contents/"
 UPSTREAM_VERSION_FILES = ("rydzz/__init__.py", "README.md")
 
 VERSION_RE = re.compile(
@@ -123,6 +125,23 @@ VERSION_RE = re.compile(
     r"|Version:\s*\**\s*v?([\d.]+)"
     r"|badge/Version[\s_-]v?([\d.]+)"
 )
+
+
+def _fetch_upstream_texts():
+    """Ambil teks file versi dari GitHub via API (bebas cache CDN raw)."""
+    texts = []
+    for rel in UPSTREAM_VERSION_FILES:
+        req = urllib.request.Request(
+            UPSTREAM_API_BASE + rel,
+            headers={"User-Agent": "RydzzShell-update-check"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8", errors="replace"))
+        try:
+            texts.append(base64.b64decode(data.get("content") or "").decode("utf-8", errors="replace"))
+        except Exception:
+            texts.append("")
+    return texts
 
 
 def _versions_in(text):
@@ -165,11 +184,8 @@ def _local_latest_version():
 
 def handle_check_update(arg=""):
     """Perintah checkupdate: cek versi terbaru di GitHub lalu tawarkan update."""
-    remote_texts = []
     try:
-        for rel in UPSTREAM_VERSION_FILES:
-            with urllib.request.urlopen(UPSTREAM_RAW_BASE + rel, timeout=10) as resp:
-                remote_texts.append(resp.read().decode("utf-8", errors="replace"))
+        remote_texts = _fetch_upstream_texts()
     except Exception as e:
         print(t("checkupdate.failed", e=e))
         return
@@ -212,6 +228,7 @@ def handle_check_update(arg=""):
         print(t("checkupdate.cancelled"))
         return
 
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     code = config.run_system_cmd_real_home(f"git -C {repo_root} pull")
     if code == 0:
         print(t("checkupdate.done", green=config.GREEN_NEON, reset=config.RESET, version=remote))

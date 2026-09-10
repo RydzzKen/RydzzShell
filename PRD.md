@@ -191,6 +191,8 @@ Built as a learning project and a personal daily driver.
    protected files.
 - **v2.8** — `checkupdate` (F36): check the latest release on GitHub
    (via the GitHub API, no CDN cache) and offer a self-update via `git pull`.
+- **v2.8.1** — `checkupdate` fixes: read versions via the GitHub API
+   (no stale CDN cache), fix missing repo root for `git pull`.
 
 ---
 
