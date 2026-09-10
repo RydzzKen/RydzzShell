@@ -189,6 +189,8 @@ Built as a learning project and a personal daily driver.
 - **v2.7** — `rfr` reset (F35): wipe & recreate any file/folder with a
    confirmation prompt, while refusing current working/home folders and
    protected files.
+- **v2.8** — `checkupdate` (F36): check the latest release on GitHub
+   (via the GitHub API, no CDN cache) and offer a self-update via `git pull`.
 
 ---
 

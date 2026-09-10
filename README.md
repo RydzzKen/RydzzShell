@@ -5,7 +5,7 @@ Built as a learning project and a daily driver: file navigation, git
 management, media downloads, QR codes, ASCII conversion, and command
 pipelining — all from one colorful terminal.
 
-> Version: **2.7** — Text Generator overhaul (spam, random, fancy, ASCII, password, key),
+> Version: **2.8** — Text Generator overhaul (spam, random, fancy, ASCII, password, key),
 > `keystore` (Java .jks), `wcode` alias for `wclone`, `rydza` alias for `ai`,
 > multi-language (English/Indonesian), persistent history,
 > pipes into builtins (incl. `| tee`) and **real-time streaming** for pure
@@ -13,7 +13,7 @@ pipelining — all from one colorful terminal.
 > daily kits (`trash`, `backup`, `hash`, `freq`, `clip`, `todo`, `serve`,
 > `pick`), named `task` snippets, `rfr`/`resetfolder` reset, and unit tests (pytest).
 
-![Version](https://img.shields.io/badge/Version-v2.7-2ea44f)
+![Version](https://img.shields.io/badge/Version-v2.8-2ea44f)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Dependency](https://img.shields.io/badge/Core-Zero%20dependency-6f42c1)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%E2%80%A2%20Termux%20%E2%80%A2%20macOS%20%E2%80%A2%20Windows-brightgreen)
