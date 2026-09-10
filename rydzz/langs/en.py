@@ -13,6 +13,7 @@ STRINGS = {
 • pwd                      - Print the current directory path
 • mkdir <folder>           - Create a new folder
 • rm <file/folder>         - Delete a file or folder
+• rfr <file/folder>        - Reset a file/folder (clear contents, recreate)
 • mv <src> <dst>           - Move or rename a file/folder
 • rn <old> <new>           - Rename a file
 • cp <src> <dst>           - Copy a file or folder
@@ -58,6 +59,7 @@ STRINGS = {
 • lang                     - Set the shell language (lang list, lang -C)
 • clear                    - Clear the screen
 • restart                   - Restart the shell without exiting
+• checkupdate               - Check for updates on GitHub (updates if asked)
 • exit                     - Exit the shell
 • <cmd1> && <cmd2>         - Run 2 commands at once
 • cmd1 | cmd2              - Pipe cmd1 output to cmd2
@@ -220,6 +222,7 @@ STRINGS = {
     "usage.cp": "Usage: cp <src> <dst>",
     "usage.mkdir": "Usage: mkdir <folder_name>",
     "usage.rm": "Usage: rm <file_or_folder_name>",
+    "usage.rfr": "Usage: rfr <file_or_folder>  (alias: resetfolder)",
     "usage.touch": "Usage: touch <file_name>",
     "usage.cat": "Usage: cat <file_name>",
     "usage.nano": "Usage: nano <file_name>",
@@ -233,6 +236,13 @@ STRINGS = {
     "ok.mkdir": "Folder '{arg}' created successfully.",
     "ok.rm_dir": "Folder '{arg}' deleted successfully.",
     "ok.rm_file": "File '{arg}' deleted successfully.",
+    "ok.rfr_dir": "Folder '{arg}' reset successfully.",
+    "ok.rfr_file": "File '{arg}' reset successfully.",
+    "rfr.confirm": "Reset '{arg}'? Everything will be deleted then recreated (y/N): ",
+    "rfr.cancelled": "Reset cancelled.",
+    "err.rfr_protected": "Error: Cannot reset the current working/home folder.",
+    "err.rfr_dir_fail": "Failed to reset folder: {e}",
+    "err.rfr_file_fail": "Failed to reset file: {e}",
     "ok.touch": "File '{arg}' created/updated successfully.",
     "err.mv_dest_dir": "Error: Destination folder '{dst}' not found!",
     "err.mv_fail": "Failed to move: {e}",
@@ -266,6 +276,16 @@ STRINGS = {
     "source.ok_rydzzrc": "Configuration updated from ~/.rydzzrc!",
     "alias.title": "Aliases:",
     "alias.empty": "No aliases found.",
+
+    # ---------- check update ----------
+    "checkupdate.failed": "Failed to check for updates (need internet): {e}",
+    "checkupdate.no_remote_version": "Could not read the latest version from the repository.",
+    "checkupdate.up_to_date": "{green}[OK]{reset} RydzzShell is up to date (v{local}). Latest: v{remote}",
+    "checkupdate.available": "{cyan}New version available:{reset} current v{local} -> latest v{remote}",
+    "checkupdate.confirm": "Update now? (y/N): ",
+    "checkupdate.cancelled": "Update cancelled.",
+    "checkupdate.done": "{green}[DONE]{reset} Updated to v{version}. Run 'restart' to apply it.",
+    "checkupdate.error": "Update failed, check the git output above.",
 
     # ---------- redirect ----------
     "redirect.failed": "Redirect failed: {e}",
@@ -438,7 +458,7 @@ TOUR_STEPS = [
 
 # Feature summary for the AI prompt
 AI_OVERVIEW = """RYDZZ SHELL FEATURES:
-- Navigation: ls [-a/-l], tree, cd, pwd, mkdir, rm, mv, rn, cp, cat, nano, touch
+- Navigation: ls [-a/-l], tree, cd, pwd, mkdir, rm, rfr, mv, rn, cp, cat, nano, touch
 - Git shortcut: gs, ga <add all>, gc <message>, gp, gpl, gl, gb, gd, gco <branch>, gst, gclone <url>
 - Media download: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <text> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
@@ -462,6 +482,8 @@ AI_TOPICS = {
     "cd": "change folder",
     "mkdir": "create a new folder",
     "rm": "delete file/folder",
+    "rfr": "reset a file/folder: rfr <path> (alias resetfolder)",
+    "resetfolder": "reset a file/folder: rfr <path> (short alias rfr)",
     "mv": "move/rename file",
     "rn": "rename file",
     "cp": "copy file",
@@ -469,6 +491,7 @@ AI_TOPICS = {
     "sudo": "sudo edit <file> for protected files",
     "lang": "set the shell language: lang list, lang -C <code>",
     "restart": "restart the shell without exiting (all state comes back fresh)",
+    "checkupdate": "check for the latest version on GitHub and update if asked: checkupdate",
     "exit": "exit the shell",
     "trash": "safe delete: trash <file>, trash list, trash restore <n>",
     "bk": "back up a file/folder: bk <path>, bk list, bk restore <n>",

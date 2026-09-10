@@ -3,17 +3,19 @@ import getpass
 import io
 import os
 import random
+import re
 import shutil
 import subprocess
 import sys
 import time
+import urllib.request
 
 try:
     import readline
 except ImportError:
     readline = None
 
-from . import ai, commands, completions, config, deploy, gadgets, i18n, kits, pipe, snippets, tools, webclone
+from . import __version__, ai, commands, completions, config, deploy, gadgets, i18n, kits, pipe, snippets, tools, webclone
 from .i18n import t
 
 
@@ -113,6 +115,110 @@ def handle_deploy(arg):
         print(t("deploy.usage"))
 
 
+UPSTREAM_RAW_BASE = "https://raw.githubusercontent.com/RydzzKen/RydzzShell/main/"
+UPSTREAM_VERSION_FILES = ("rydzz/__init__.py", "README.md")
+
+VERSION_RE = re.compile(
+    r'__version__\s*=\s*["\']v?([\d.]+)["\']'
+    r"|Version:\s*\**\s*v?([\d.]+)"
+    r"|badge/Version[\s_-]v?([\d.]+)"
+)
+
+
+def _versions_in(text):
+    """Kumpulkan semua kandidat versi (X.Y[.Z]) dari teks sebuah file."""
+    found = []
+    for m in VERSION_RE.finditer(text or ""):
+        ver = next((g for g in m.groups() if g), "")
+        if ver and re.fullmatch(r"[\d.]+", ver):
+            found.append(ver)
+    return found
+
+
+def _version_key(v):
+    """Ubah string versi (mis. '2.10') jadi tuple angka untuk dibandingkan."""
+    parts = re.findall(r"\d+", str(v))
+    return tuple(int(p) for p in parts) or (0,)
+
+
+def _latest_version(texts):
+    """Versi tertinggi di antara kumpulan teks (README + __init__.py)."""
+    candidates = [v for t in texts for v in _versions_in(t)]
+    if not candidates:
+        return None
+    return max(candidates, key=_version_key)
+
+
+def _local_latest_version():
+    """Versi tertinggi di instalasi lokal (fallback utama: __version__)."""
+    texts = []
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for rel in ("rydzz/__init__.py", "README.md"):
+        try:
+            with open(os.path.join(repo_root, rel), encoding="utf-8", errors="replace") as f:
+                texts.append(f.read())
+        except OSError:
+            pass
+    candidates = [__version__] + [v for t in texts for v in _versions_in(t)]
+    return max(candidates, key=_version_key)
+
+
+def handle_check_update(arg=""):
+    """Perintah checkupdate: cek versi terbaru di GitHub lalu tawarkan update."""
+    remote_texts = []
+    try:
+        for rel in UPSTREAM_VERSION_FILES:
+            with urllib.request.urlopen(UPSTREAM_RAW_BASE + rel, timeout=10) as resp:
+                remote_texts.append(resp.read().decode("utf-8", errors="replace"))
+    except Exception as e:
+        print(t("checkupdate.failed", e=e))
+        return
+
+    remote = _latest_version(remote_texts)
+    local = _local_latest_version()
+    if not remote:
+        print(t("checkupdate.no_remote_version"))
+        return
+
+    if _version_key(remote) <= _version_key(local):
+        print(
+            t(
+                "checkupdate.up_to_date",
+                green=config.GREEN_NEON,
+                reset=config.RESET,
+                local=local,
+                remote=remote,
+            )
+        )
+        return
+
+    print(
+        t(
+            "checkupdate.available",
+            cyan=config.CYAN,
+            reset=config.RESET,
+            local=local,
+            remote=remote,
+        )
+    )
+    try:
+        answer = input(t("checkupdate.confirm")).strip().lower()
+    except (KeyboardInterrupt, EOFError):
+        print()
+        print(t("checkupdate.cancelled"))
+        return
+
+    if answer not in ("y", "yes"):
+        print(t("checkupdate.cancelled"))
+        return
+
+    code = config.run_system_cmd_real_home(f"git -C {repo_root} pull")
+    if code == 0:
+        print(t("checkupdate.done", green=config.GREEN_NEON, reset=config.RESET, version=remote))
+    else:
+        print(t("checkupdate.error"))
+
+
 def handle_ascii(arg):
     args = arg.split() if arg else []
     if not args or args[0] not in ("enc", "encode", "dec", "decode"):
@@ -138,7 +244,7 @@ def show_banner():
     config.clear_screen()
     if config.term_width() < 44:
         print(
-            f"{config.GREEN_NEON}=== RydzzShell v2.4 ==={config.RESET}\n"
+            f"{config.GREEN_NEON}=== RydzzShell v{__version__} ==={config.RESET}\n"
             f"{config.YELLOW}  {t('banner.hint')}{config.RESET}"
         )
         return
@@ -149,7 +255,7 @@ def show_banner():
 ██╔══██╗  ╚██╔╝  ██║  ██║ ███╔╝   ███╔╝
 ██║  ██║   ██║   ██████╔╝███████╗███████╗
 ╚═╝  ╚═╝   ╚═╝   ╚═════╝ ╚══════╝╚══════╝
-{config.CYAN}    --- Custom Interactive Shell v2.4 ---{config.RESET}
+{config.CYAN}    --- Custom Interactive Shell v{__version__} ---{config.RESET}
 {config.YELLOW}  {t('banner.hint')}{config.RESET}
 """
     print(banner)
@@ -848,6 +954,46 @@ def handle_command(single_command):
         else:
             print(t("usage.rm"))
 
+    elif cmd in ["rfr", "resetfolder"]:
+        if arg:
+            try:
+                target = os.path.abspath(os.path.expanduser(arg))
+            except Exception:
+                target = os.path.abspath(arg)
+            if not os.path.exists(target):
+                print(t("err.not_found_generic"))
+            elif config.is_protected(target):
+                print(t("err.protected_access"))
+            elif target in (os.getcwd(), config.CUSTOM_HOME, config.REAL_HOME):
+                print(t("err.rfr_protected"))
+            else:
+                try:
+                    answer = input(t("rfr.confirm", arg=target))
+                except KeyboardInterrupt:
+                    print("\n^C")
+                    config.reset_terminal()
+                    return
+                if answer.strip().lower() not in ("y", "yes"):
+                    print(t("rfr.cancelled"))
+                else:
+                    try:
+                        if os.path.isdir(target):
+                            shutil.rmtree(target)
+                            os.mkdir(target)
+                            print(t("ok.rfr_dir", arg=target))
+                        else:
+                            os.remove(target)
+                            open(target, "a").close()
+                            print(t("ok.rfr_file", arg=target))
+                    except Exception as e:
+                        if os.path.isdir(target) or (not os.path.exists(target)):
+                            print(t("err.rfr_dir_fail", e=e))
+                        else:
+                            print(t("err.rfr_file_fail", e=e))
+                        return
+        else:
+            print(t("usage.rfr"))
+
     elif cmd == "touch":
         if arg:
             try:
@@ -1068,6 +1214,9 @@ def handle_command(single_command):
         else:
             subprocess.Popen([sys.executable, cli_path])
             sys.exit()
+
+    elif cmd == "checkupdate" or (cmd == "check" and arg.lower().startswith("update")):
+        handle_check_update(arg)
 
     else:
         # --- AUTO-CDF (fallback) ---

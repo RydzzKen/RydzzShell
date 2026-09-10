@@ -13,6 +13,7 @@ STRINGS = {
 • pwd                      - Menampilkan path lokasi direktori aktif
 • mkdir <folder>           - Membuat folder baru
 • rm <file/folder>         - Menghapus file atau folder
+• rfr <file/folder>        - Reset file/folder (hapus isi lalu buat ulang)
 • mv <asal> <tujuan>       - Pindah atau rename file/folder
 • rn <lama> <baru>          - Rename file
 • cp <asal> <tujuan>       - Menyalin file atau folder
@@ -58,6 +59,7 @@ STRINGS = {
 • lang                     - Atur bahasa shell (lang list, lang -C)
 • clear                    - Membersihkan layar
 • restart                   - Restart shell tanpa keluar
+• checkupdate               - Cek update di GitHub (update bila diminta)
 • exit                     - Keluar dari shell
 • <cmd1> && <cmd2>         - Menjalankan 2 perintah sekaligus
 • cmd1 | cmd2              - Pipe output cmd1 ke cmd2
@@ -220,6 +222,7 @@ STRINGS = {
     "usage.cp": "Guna: cp <asal> <tujuan>",
     "usage.mkdir": "Guna: mkdir <nama_folder>",
     "usage.rm": "Guna: rm <nama_file_atau_folder>",
+    "usage.rfr": "Guna: rfr <file_atau_folder>  (alias: resetfolder)",
     "usage.touch": "Guna: touch <nama_file>",
     "usage.cat": "Guna: cat <nama_file>",
     "usage.nano": "Guna: nano <nama_file>",
@@ -233,6 +236,13 @@ STRINGS = {
     "ok.mkdir": "Folder '{arg}' berhasil dibuat.",
     "ok.rm_dir": "Folder '{arg}' berhasil dihapus.",
     "ok.rm_file": "File '{arg}' berhasil dihapus.",
+    "ok.rfr_dir": "Folder '{arg}' berhasil di-reset.",
+    "ok.rfr_file": "File '{arg}' berhasil di-reset.",
+    "rfr.confirm": "Reset '{arg}'? Semua isi akan dihapus lalu dibuat ulang (y/N): ",
+    "rfr.cancelled": "Reset dibatalkan.",
+    "err.rfr_protected": "Error: Tidak bisa reset folder kerja/home saat ini.",
+    "err.rfr_dir_fail": "Gagal mereset folder: {e}",
+    "err.rfr_file_fail": "Gagal mereset file: {e}",
     "ok.touch": "File '{arg}' berhasil dibuat/diperbarui.",
     "err.mv_dest_dir": "Error: Folder tujuan '{dst}' tidak ditemukan!",
     "err.mv_fail": "Gagal memindahkan: {e}",
@@ -266,6 +276,16 @@ STRINGS = {
     "source.ok_rydzzrc": "Berhasil meng-update konfigurasi dari ~/.rydzzrc!",
     "alias.title": "Daftar Alias:",
     "alias.empty": "Tidak ada alias ditemukan.",
+
+    # ---------- cek update ----------
+    "checkupdate.failed": "Gagal mengecek update (butuh internet): {e}",
+    "checkupdate.no_remote_version": "Tidak bisa membaca versi terbaru dari repository.",
+    "checkupdate.up_to_date": "{green}[SUKSES]{reset} RydzzShell sudah versi terbaru (v{local}). Versi terbaru: v{remote}",
+    "checkupdate.available": "{cyan}Versi baru tersedia:{reset} sekarang v{local} -> terbaru v{remote}",
+    "checkupdate.confirm": "Update sekarang? (y/N): ",
+    "checkupdate.cancelled": "Update dibatalkan.",
+    "checkupdate.done": "{green}[SUKSES]{reset} Ter-update ke v{version}. Jalankan 'restart' untuk menerapkan.",
+    "checkupdate.error": "Update gagal, cek output git di atas.",
 
     # ---------- redirect ----------
     "redirect.failed": "Redirect gagal: {e}",
@@ -438,7 +458,7 @@ TOUR_STEPS = [
 
 # Ringkasan fitur untuk prompt AI
 AI_OVERVIEW = """FEATUR RYDZZ SHELL:
-- Navigasi: ls [-a/-l], tree, cd, pwd, mkdir, rm, mv, rn, cp, cat, nano, touch
+- Navigasi: ls [-a/-l], tree, cd, pwd, mkdir, rm, rfr, mv, rn, cp, cat, nano, touch
 - Git shortcut: gs, ga <semua add>, gc <pesan>, gp, gpl, gl, gb, gd, gco <branch>, gst, gclone <url>
 - Unduh media: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <teks> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
@@ -462,6 +482,8 @@ AI_TOPICS = {
     "cd": "pindah folder",
     "mkdir": "buat folder baru",
     "rm": "hapus file/folder",
+    "rfr": "reset file/folder: rfr <path> (alias resetfolder)",
+    "resetfolder": "reset file/folder: rfr <path> (alias singkat rfr)",
     "mv": "pindah/rename file",
     "rn": "rename file",
     "cp": "salin file",
@@ -469,6 +491,7 @@ AI_TOPICS = {
     "sudo": "sudo edit <file> untuk file terproteksi",
     "lang": "atur bahasa shell: lang list, lang -C <kode>",
     "restart": "restart shell tanpa perlu keluar (semua state segar kembali)",
+    "checkupdate": "cek versi terbaru di GitHub lalu update bila diminta: checkupdate",
     "exit": "keluar dari shell",
     "trash": "hapus aman: trash <file>, trash list, trash restore <n>",
     "bk": "backup file/folder: bk <path>, bk list, bk restore <n>",

@@ -9,7 +9,9 @@ BUILTIN_COMMANDS = [
     "ping", "zip", "unzip", "tar", "grep", "find", "df", "free",
     "ps", "neofetch", "fastfetch", "whoami", "passwd", "passw",
     "source", "sudo", "alias", "aliases", "list", "help", "?",
-    "clear", "htop", "TG", "exit", "restart",
+    "clear", "htop", "TG", "exit", "restart", "checkupdate",
+    # reset folder/file
+    "rfr", "resetfolder",
     # git shortcuts
     "gs", "ga", "gl", "gb", "gd", "gp", "gpl", "gst", "gc", "gco",
     "gclone",

@@ -89,6 +89,7 @@ Built as a learning project and a personal daily driver.
 | F32 | `rydza` alias | Alias for `ai` command (RydzAgent) |
 | F33 | `deploy vercel` | Deploy current/selected folder to Vercel via the official CLI; `--prod` for production, `dp` short alias, live-streamed build output, latest URLs from `vercel ls`, guards for sandbox/real home + auth check (`vercel login`) |
 | F34 | System pipeline streaming | Pipes made only of system commands (e.g. `curl \| bash`) are handed to the OS shell and stream output live instead of being captured until completion — installers/progress stay visible |
+| F35 | `rfr` reset | `rfr <path>` (alias `resetfolder`) wipes a file/folder and recreates it empty — confirmation prompt first, refuses cwd/home/protected targets |
 
 ### P2 — Next up
 | ID | Feature | Description |
@@ -185,6 +186,9 @@ Built as a learning project and a personal daily driver.
 - **v2.6** — deployment: `deploy vercel` (F33) with auth guards & live URL
    display; system-pipeline real-time streaming (F34) so `curl | bash`
    and similar show progress live.
+- **v2.7** — `rfr` reset (F35): wipe & recreate any file/folder with a
+   confirmation prompt, while refusing current working/home folders and
+   protected files.
 
 ---
 
