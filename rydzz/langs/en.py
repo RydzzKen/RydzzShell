@@ -59,7 +59,7 @@ STRINGS = {
 • lang                     - Set the shell language (lang list, lang -C)
 • clear                    - Clear the screen
 • restart                   - Restart the shell without exiting
-• checkupdate               - Check for updates on GitHub (updates if asked)
+• checkupdate [-y]            - Check for updates on GitHub (-y = update without asking)
 • exit                     - Exit the shell
 • <cmd1> && <cmd2>         - Run 2 commands at once
 • cmd1 | cmd2              - Pipe cmd1 output to cmd2

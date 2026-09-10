@@ -59,7 +59,7 @@ STRINGS = {
 • lang                     - Atur bahasa shell (lang list, lang -C)
 • clear                    - Membersihkan layar
 • restart                   - Restart shell tanpa keluar
-• checkupdate               - Cek update di GitHub (update bila diminta)
+• checkupdate [-y]            - Cek update di GitHub (-y = update tanpa tanya)
 • exit                     - Keluar dari shell
 • <cmd1> && <cmd2>         - Menjalankan 2 perintah sekaligus
 • cmd1 | cmd2              - Pipe output cmd1 ke cmd2

@@ -193,6 +193,8 @@ Built as a learning project and a personal daily driver.
    (via the GitHub API, no CDN cache) and offer a self-update via `git pull`.
 - **v2.8.1** — `checkupdate` fixes: read versions via the GitHub API
    (no stale CDN cache), fix missing repo root for `git pull`.
+- **v2.8.2** — `checkupdate -y` / `--yes`: skip the confirmation
+   prompt and update directly.
 
 ---
 

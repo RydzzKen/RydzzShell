@@ -183,7 +183,11 @@ def _local_latest_version():
 
 
 def handle_check_update(arg=""):
-    """Perintah checkupdate: cek versi terbaru di GitHub lalu tawarkan update."""
+    """Perintah checkupdate: cek versi terbaru di GitHub lalu tawarkan update.
+
+    `-y`/`--yes` = langsung update tanpa konfirmasi.
+    """
+    auto_yes = any(f in (arg or "").split() for f in ("-y", "--yes"))
     try:
         remote_texts = _fetch_upstream_texts()
     except Exception as e:
@@ -217,12 +221,15 @@ def handle_check_update(arg=""):
             remote=remote,
         )
     )
-    try:
-        answer = input(t("checkupdate.confirm")).strip().lower()
-    except (KeyboardInterrupt, EOFError):
-        print()
-        print(t("checkupdate.cancelled"))
-        return
+    if auto_yes:
+        answer = "y"
+    else:
+        try:
+            answer = input(t("checkupdate.confirm")).strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            print(t("checkupdate.cancelled"))
+            return
 
     if answer not in ("y", "yes"):
         print(t("checkupdate.cancelled"))
