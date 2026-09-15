@@ -17,7 +17,7 @@ try:
 except ImportError:
     readline = None
 
-from . import __version__, ai, commands, completions, config, deploy, gadgets, i18n, kits, pipe, snippets, tools, webclone
+from . import __version__, ai, cst, commands, completions, config, deploy, gadgets, i18n, kits, pipe, snippets, tools, webclone
 from .i18n import t
 
 
@@ -744,7 +744,7 @@ def handle_sudo(single_command):
 PIPE_BUILTINS = {
     "help", "?", "list", "history", "echo", "alias", "aliases",
     "tree", "pwd", "cat", "calc", "ascii", "weather", "ai", "lang",
-    "keystore", "rn", "rename",
+    "keystore", "rn", "rename", "CST",
 }
 
 # Beritahu pipe.py nama-nama builtin ini agar pipeline murni perintah sistem
@@ -1221,6 +1221,9 @@ def handle_command(single_command):
     elif cmd in ("deploy", "dp"):
         handle_deploy(arg)
 
+    elif cmd == "CST":
+        handle_cst(arg)
+
     elif cmd == "task":
         snippets.task(arg, runner=handle_command)
 
@@ -1272,6 +1275,11 @@ def handle_command(single_command):
             print(msg)
             config.LAST_CMD = single_command
             config.LAST_ERROR = msg
+
+
+def handle_cst(arg):
+    """Perintah CST (Cyber Security Test): CST [sub-command]."""
+    cst.handle_cst(arg)
 
 
 def handle_lang(arg):

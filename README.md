@@ -5,7 +5,7 @@ Built as a learning project and a daily driver: file navigation, git
 management, media downloads, QR codes, ASCII conversion, and command
 pipelining — all from one colorful terminal.
 
-> Version: **2.8.2** — Text Generator overhaul (spam, random, fancy, ASCII, password, key),
+> Version: **2.9.0** — CST (Cyber Security Test),
 > `keystore` (Java .jks), `wcode` alias for `wclone`, `rydza` alias for `ai`,
 > multi-language (English/Indonesian), persistent history,
 > pipes into builtins (incl. `| tee`) and **real-time streaming** for pure
@@ -13,7 +13,7 @@ pipelining — all from one colorful terminal.
 > daily kits (`trash`, `backup`, `hash`, `freq`, `clip`, `todo`, `serve`,
 > `pick`), named `task` snippets, `rfr`/`resetfolder` reset, and unit tests (pytest).
 
-![Version](https://img.shields.io/badge/Version-v2.8.2-2ea44f)
+![Version](https://img.shields.io/badge/Version-v2.9.0-2ea44f)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Dependency](https://img.shields.io/badge/Core-Zero%20dependency-6f42c1)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%E2%80%A2%20Termux%20%E2%80%A2%20macOS%20%E2%80%A2%20Windows-brightgreen)
@@ -181,6 +181,20 @@ dl update               Update yt-dlp
    substituted and the result runs back through the normal shell (chaining,
    pipes, aliases all work inside a snippet)
 
+### 🔒 Cyber Security Test — CST
+- `CST` — menu interaktif dengan 8 sub-tools (educational/lab/quick check)
+- **Port Scanner** — scan port dengan `nmap` (jika tersedia) atau socket bawaan
+- **Directory Fuzzer** — fuzz directory dengan wordlist built-in atau custom
+- **Subdomain Enum** — enumerasi subdomain dengan `subfinder` (jika ada) atau bruteforce
+- **SQLi Scanner** — deteksi SQL injection (requests-based)
+- **XSS Scanner** — deteksi XSS (requests-based)
+- **Login Testing** — analisis form login dan brute force
+- **Reverse Shell Gen** — generate payload reverse shell (bash, nc, python, perl, dll.)
+- **CVE Check** — cek vulnerability yang dikenal berdasarkan target
+
+> Core zero-dependency: `socket` bawaan Python. `requests`/`bs4` optional.
+> Tool eksternal (nmap, subfinder) dideteksi runtime.
+
 ### 🤖 AI Guide — RydzAgent
 - `ai` / `rydza <question>` — ask anything (free Gemini, follows the shell language)
 - `ai tour` / `rydza tour` — interactive tour of shell features
@@ -244,16 +258,17 @@ Rydzz/
     ├── commands.py       # ls -a/-l, tree, git shortcuts, capture_ls
     ├── completions.py    # Tab completion (readline)
     ├── pipe.py           # Pipeline & redirection
-    ├── shell.py          # Main REPL loop, dispatch, help
-    ├── tools.py          # dl (yt-dlp/spotdl), qr (segno), ascii
-    ├── deploy.py         # deploy <platform> — Vercel CLI wrapper & status
-    ├── webclone.py       # wclone — web page cloner → zip
-    ├── ai.py             # RydzAgent — AI guide (Gemini, optional)
-    ├── gadgets.py        # timer, stopwatch, calc, weather
-    ├── kits.py           # Daily kits: trash, bk, hash, freq, clip, todo, serve, pick
-    ├── snippets.py       # task runner — named snippets (JSON)
-    ├── i18n.py           # Multi-language support (translations, lang)
-    └── langs/            # Language packs (id.py, en.py, ...)
+├── shell.py          # Main REPL loop, dispatch, help
+├── tools.py          # dl (yt-dlp/spotdl), qr (segno), ascii
+├── deploy.py         # deploy <platform> — Vercel CLI wrapper & status
+├── webclone.py       # wclone — web page cloner → zip
+├── ai.py             # RydzAgent — AI guide (Gemini, optional)
+├── gadgets.py        # timer, stopwatch, calc, weather
+├── kits.py           # Daily kits: trash, bk, hash, freq, clip, todo, serve, pick
+├── snippets.py       # task runner — named snippets (JSON)
+├── i18n.py           # Multi-language support (translations, lang)
+├── langs/            # Language packs (id.py, en.py, ...)
+├── cst.py            # CST (Cyber Security Test) — port scanner, fuzzer, sqli, xss, etc.
 ```
 
 ## Testing

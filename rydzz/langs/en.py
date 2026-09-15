@@ -79,11 +79,12 @@ STRINGS = {
 --- ADVANCED FEATURES ---
 • Tab completion            - Auto-complete command/file (Tab)
 • Auto-cd: type a folder name - Automatically jump into it
-• ~/.rydzzrc                - Configure prompt, banner, hidden, init, lang""",
+• ~/.rydzzrc                - Configure prompt, banner, hidden, init, lang
+• CST                        - Cyber Security Test (port, fuzzer, sqli, xss, etc.)""",
 
     # ---------- dl ----------
     "dl.usage_help": """Usage: dl <url1> <url2> ... [-q] | dl list [options] | dl update
-  dl <url> --redo       - re-download even if the file exists
+    dl <url> --redo       - re-download even if the file exists
   dl list -n 5          - 5 most recent downloads
   dl list -s            - sort by largest size
   dl redo               - list downloads to re-download
@@ -442,6 +443,75 @@ STRINGS = {
     "deploy.home_warn_real": "deploy: caution — you are deploying your real home folder: {home}",
     "deploy.not_logged_in": "deploy: The Vercel CLI is not logged in.",
     "deploy.login_hint": "  Login first: vercel login\n  (or deploy temporarily without logging in: vercel deploy --temporary)",
+
+    # ---------- CST ----------
+    "cst.usage": "Usage: CST [sub-command]\n  CST              - Show main menu\n  CST port <target>  - Port scanner\n  CST fuzz <target>  - Directory fuzzer\n  CST subdomain <domain>  - Subdomain enum\n  CST sqli <url>     - SQLi scanner\n  CST xss <url>      - XSS scanner\n  CST login <url>    - Login testing\n  CST revshell       - Reverse shell generator\n  CST cve <target>   - CVE checker",
+    "cst.nmap_missing": "[i] nmap not found, using built-in scanner (less accurate)",
+    "cst.menu_title": "=== CST (Cyber Security Test) ===",
+    "cst.menu.port": "Port Scanner",
+    "cst.menu.dir_fuzz": "Directory Fuzzer",
+    "cst.menu.subdomain": "Subdomain Enum",
+    "cst.menu.sqli": "SQLi Scanner",
+    "cst.menu.xss": "XSS Scanner",
+    "cst.menu.login": "Login Testing",
+    "cst.menu.rev_shell": "Reverse Shell Gen",
+    "cst.menu.cve": "CVE Check",
+    "cst.menu.exit": "Exit",
+    "cst.target_prompt": "Target: ",
+    "cst.input_choice": "Choice: ",
+    "cst.port_range": "Port range (default 1-1024): ",
+    "cst.target_required": "Target required!",
+    "cst.range_error": "Invalid range format. Example: 1-1024",
+    "cst.scanning": "Scanning {target}...",
+    "cst.scanning_progress": "Scanning... {current}/{total}",
+    "cst.found_ports": "Open ports found: {n}",
+    "cst.no_open_ports": "No open ports found",
+    "cst.scan_timeout": "Scan timeout!",
+    "cst.scan_error": "Scan error: {e}",
+    "cst.dir_fuzz_title": "Directory Fuzzer",
+    "cst.dir_fuzz_wordlist": "Built-in wordlist: admin, login, dashboard, etc. ('custom' to upload file)",
+    "cst.wordlist": "Enter wordlist path (Enter=default, 'custom'=custom): ",
+    "cst.wordlist_error": "Wordlist not found, using default",
+    "cst.fuzz_progress": "Fuzzing... {current}/{total}",
+    "cst.fuzz_found": "Paths found: {n}",
+    "cst.fuzz_none": "No paths found",
+    "cst.subdomain_title": "Subdomain Enumeration",
+    "cst.subdomain_no_subfinder": "subfinder not found, using bruteforce",
+    "cst.subdomain_found": "Subdomains found: {n}",
+    "cst.subdomain_none": "No subdomains found",
+    "cst.subdomain_progress": "Enumerating... {current}/{total}",
+    "cst.sqli_title": "SQL Injection Scanner",
+    "cst.sqli_found": "SQLi vulnerabilities found: {n}",
+    "cst.sqli_none": "No SQLi vulnerabilities found",
+    "cst.xss_title": "XSS Scanner",
+    "cst.xss_found": "XSS vulnerabilities found: {n}",
+    "cst.xss_none": "No XSS vulnerabilities found",
+    "cst.login_title": "Login Testing",
+    "cst.login_no_form": "No login form found",
+    "cst.login_has_form": "Login form found!",
+    "cst.login_no_fields": "No fields found",
+    "cst.login_brute_hint": "Want to brute force? (y/n): ",
+    "cst.brute_confirm": "Confirm brute force (y/n): ",
+    "cst.brute_start": "Brute force started...",
+    "cst.brute_done": "Brute force done!",
+    "cst.login_simple_mode": "Simple mode (requests not available)",
+    "cst.rev_shell_title": "Reverse Shell Generator",
+    "cst.rev_shell_info": "Reverse shell payload generator",
+    "cst.lhost": "LHOST: ",
+    "cst.lport": "LPORT: ",
+    "cst.rev_shell_options": "Select reverse shell type:",
+    "cst.rev_shell_generated": "Reverse shell generated:",
+    "cst.save_payload": "Save payload? (y/n): ",
+    "cst.cve_title": "CVE Checker",
+    "cve_info": "Check known vulnerabilities",
+    "cst.cve_found": "CVEs found: {n}",
+    "cst.cve_none": "No CVE found for \"{target}\"",
+    "cst.cve_known_targets": "Known targets:",
+    "cst.save_cve": "Save report? (y/n): ",
+    "cst.exiting": "Exiting CST...",
+    "cst.bad_choice": "Invalid choice!",
+    "cst.selected": "Selected:",
+    "cst.press_enter": "Press Enter to continue...",
 }
 
 # `ai tour` steps (title, description, example)
@@ -502,5 +572,5 @@ AI_TOPICS = {
     "serve": "run an HTTP server: serve [port] [folder], for sharing files",
     "pick": "interactively find files with fuzzy match",
     "task": "named command snippets: task save <name> \"<cmd $1>\", task <name>",
-    "deploy": "deploy a project to Vercel: deploy vercel [path] [--prod], defaults to the active folder",
+    "deploy": "deploy a project to Vercel: deploy vercel [path] [--prod], defaults to the active folder"
 }

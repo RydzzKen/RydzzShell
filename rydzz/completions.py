@@ -18,6 +18,8 @@ BUILTIN_COMMANDS = [
     # fitur baru
     "tree", "dl", "qr", "ascii", "wclone", "wcode",
     "keystore",
+    # CST keamanan
+    "CST",
     # AI pemandu
     "ai", "rydza",
     # alat harian
