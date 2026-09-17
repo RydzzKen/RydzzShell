@@ -277,6 +277,8 @@ STRINGS = {
     # ---------- alias / source ----------
     "source.ok_bashrc": "Aliases updated from ~/.bashrc!",
     "source.ok_rydzzrc": "Configuration updated from ~/.rydzzrc!",
+    "deactivate.not_active": "No virtual environment is active.",
+    "deactivate.done": "Virtual environment deactivated.",
     "alias.title": "Aliases:",
     "alias.empty": "No aliases found.",
 

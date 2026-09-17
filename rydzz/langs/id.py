@@ -277,6 +277,8 @@ STRINGS = {
     # ---------- alias / source ----------
     "source.ok_bashrc": "Berhasil meng-update alias dari ~/.bashrc!",
     "source.ok_rydzzrc": "Berhasil meng-update konfigurasi dari ~/.rydzzrc!",
+    "deactivate.not_active": "Tidak ada virtual environment yang aktif.",
+    "deactivate.done": "Virtual environment dinonaktifkan.",
     "alias.title": "Daftar Alias:",
     "alias.empty": "Tidak ada alias ditemukan.",
 

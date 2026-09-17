@@ -1138,6 +1138,7 @@ def handle_command(single_command):
                 print(t("err.not_found_generic"))
             else:
                 try:
+                    os.environ["_OLD_VIRTUAL_PATH"] = os.environ.get("PATH", "")
                     result = subprocess.run(
                         ["bash", "-c", f'source "{expanded_arg}" && env'],
                         capture_output=True, text=True, timeout=10,
@@ -1154,6 +1155,16 @@ def handle_command(single_command):
                     print(t("source.failed"))
         else:
             print(t("usage.source"))
+
+    elif cmd == "deactivate":
+        if "VIRTUAL_ENV" not in os.environ:
+            print(t("deactivate.not_active"))
+        else:
+            old_path = os.environ.pop("_OLD_VIRTUAL_PATH", None)
+            if old_path:
+                os.environ["PATH"] = old_path
+            os.environ.pop("VIRTUAL_ENV", None)
+            print(t("deactivate.done"))
 
     elif single_command.startswith("sudo"):
         handle_sudo(single_command)
