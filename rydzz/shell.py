@@ -1415,7 +1415,7 @@ def main():
         level_str = f" L{config.SHELL_LEVEL}" if config.SHELL_LEVEL > 1 else ""
         prompt_color = config.get_prompt_color()
         venv_name = os.environ.get("VIRTUAL_ENV", "")
-        venv_str = f"({os.path.basename(venv_name)}) " if venv_name else ""
+        venv_str = f"{config.WHITE}({os.path.basename(venv_name)}) {config.RESET}" if venv_name else ""
 
         try:
             prompt = config.wrap_ansi(
