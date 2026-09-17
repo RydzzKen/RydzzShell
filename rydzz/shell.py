@@ -1414,10 +1414,12 @@ def main():
         git_info = config.get_git_branch()
         level_str = f" L{config.SHELL_LEVEL}" if config.SHELL_LEVEL > 1 else ""
         prompt_color = config.get_prompt_color()
+        venv_name = os.environ.get("VIRTUAL_ENV", "")
+        venv_str = f"({os.path.basename(venv_name)}) " if venv_name else ""
 
         try:
             prompt = config.wrap_ansi(
-                f"{prompt_color}RydzzShell{level_str}:[{cwd}]{git_info}$ "
+                f"{prompt_color}{venv_str}RydzzShell{level_str}:[{cwd}]{git_info}$ "
                 f"{config.RESET}"
             )
             raw_input = input(prompt).strip()
