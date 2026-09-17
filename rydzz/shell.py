@@ -1132,6 +1132,26 @@ def handle_command(single_command):
             config.load_rydzzrc()
             completions.refresh()
             print(t("source.ok_rydzzrc"))
+        elif arg:
+            expanded_arg = os.path.expanduser(arg)
+            if not os.path.exists(expanded_arg):
+                print(t("err.not_found_generic"))
+            else:
+                try:
+                    result = subprocess.run(
+                        ["bash", "-c", f'source "{expanded_arg}" && env'],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    if result.returncode == 0:
+                        for line in result.stdout.strip().split("\n"):
+                            if "=" in line:
+                                key, _, value = line.partition("=")
+                                os.environ[key] = value
+                        print(t("source.ok_generic", file=expanded_arg))
+                    else:
+                        print(t("source.failed"))
+                except Exception:
+                    print(t("source.failed"))
         else:
             print(t("usage.source"))
 

@@ -30,7 +30,7 @@ STRINGS = {
 • neofetch / fastfetch     - Aesthetic system display
 • sudo edit <file>         - Protected access to edit secret files
 • sudo newpass             - Permanently change the custom Sudo password
-• source ~/.bashrc         - Reload aliases from ~/.bashrc
+• source <file>        - Execute file in current shell (e.g. source venv/bin/activate)
 • alias / aliases          - Show aliases read from ~/.bashrc
 • TG                       - Text Generator (spam, random, fancy, ASCII, password, key)
 • dl <url>                 - Download video/music to download/rydzzMedia
@@ -229,7 +229,9 @@ STRINGS = {
     "usage.nano": "Usage: nano <file_name>",
     "usage.python": "Usage: python <file.py>",
     "usage.node": "Usage: node <file.js>",
-    "usage.source": "Usage: source ~/.bashrc or source ~/.rydzzrc",
+    "usage.source": "Usage: source <file>",
+    "source.ok_generic": "Sourced '{file}' successfully!",
+    "source.failed": "Failed to source file.",
     "ok.mv_dir": "'{src}' moved successfully into folder '{dst}'.",
     "ok.mv_rename": "'{src}' renamed successfully to '{dst}'.",
     "ok.rn": "'{src}' renamed to '{dst}'.",
@@ -533,7 +535,7 @@ AI_OVERVIEW = """RYDZZ SHELL FEATURES:
 - Media download: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <text> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
 - Web clone: wclone <url> (alias wcode) -> zip html/css/js/images/fonts
-- Utilities: clear, history, echo, whoami, sudo edit, sudo newpass, source ~/.bashrc, lang
+- Utilities: clear, history, echo, whoami, sudo edit, sudo newpass, source, lang
 - Pipeline: cmd1 | cmd2 , chaining && , redirect > or >>"""
 
 # Offline AI topics (keyword -> explanation)

@@ -207,6 +207,7 @@ dl update               Update yt-dlp
 ### 🔌 System Integration
 `git`, `curl`, `wget`, `ssh`/`sshd`, `ping`, `gh`, `pip`, `node`, `df`,
 `free`, `ps`, `htop`, `neofetch`/`fastfetch`, `whoami`, `passwd`,
+`source <file>` to execute any script in the current shell (e.g. `source venv/bin/activate`),
 `source ~/.bashrc` for real aliases, plus other system commands.
 
 ---

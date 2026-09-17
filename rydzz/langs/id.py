@@ -30,7 +30,7 @@ STRINGS = {
 • neofetch / fastfetch     - Tampilan sistem aesthetic
 • sudo edit <file>         - Akses terproteksi untuk edit file rahasia
 • sudo newpass             - Mengubah password Sudo khusus secara permanen
-• source ~/.bashrc         - Reload alias dari ~/.bashrc
+• source <file>        - Jalankan file di shell saat ini (contoh: source venv/bin/activate)
 • alias / aliases          - Menampilkan alias yang dibaca dari ~/.bashrc
 • TG                       - Text Generator (spam, random, fancy, ASCII, password, key)
 • dl <url>                 - Unduh video/lagu ke download/rydzzMedia
@@ -229,7 +229,9 @@ STRINGS = {
     "usage.nano": "Guna: nano <nama_file>",
     "usage.python": "Guna: python <nama_file.py>",
     "usage.node": "Guna: node <nama_file.js>",
-    "usage.source": "Guna: source ~/.bashrc atau source ~/.rydzzrc",
+    "usage.source": "Guna: source <file>",
+    "source.ok_generic": "Berhasil source '{file}'!",
+    "source.failed": "Gagal source file.",
     "ok.mv_dir": "'{src}' berhasil dipindahkan ke folder '{dst}'.",
     "ok.mv_rename": "'{src}' berhasil di-rename menjadi '{dst}'.",
     "ok.rn": "'{src}' berhasil di-rename menjadi '{dst}'.",
@@ -533,7 +535,7 @@ AI_OVERVIEW = """FEATUR RYDZZ SHELL:
 - Unduh media: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <teks> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
 - Klone web: wclone <url> (alias wcode) -> zip html/css/js/gambar/font
-- Utilitas: clear, history, echo, whoami, sudo edit, sudo newpass, source ~/.bashrc, lang
+- Utilitas: clear, history, echo, whoami, sudo edit, sudo newpass, source, lang
 - Pipeline: cmd1 | cmd2 , chaining && , redirect > atau >>"""
 
 # Topik offline AI (kata -> penjelasan)
