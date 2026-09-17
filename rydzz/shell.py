@@ -1419,7 +1419,7 @@ def main():
 
         try:
             prompt = config.wrap_ansi(
-                f"{prompt_color}{venv_str}RydzzShell{level_str}:[{cwd}]{git_info}$ "
+                f"{venv_str}{prompt_color}RydzzShell{level_str}:[{cwd}]{git_info}$ "
                 f"{config.RESET}"
             )
             raw_input = input(prompt).strip()
