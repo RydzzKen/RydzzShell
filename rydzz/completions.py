@@ -24,6 +24,8 @@ BUILTIN_COMMANDS = [
     "ai", "rydza",
     # alat harian
     "timer", "stopwatch", "calc", "weather",
+    # toolkit pengembang
+    "ff", "port",
     # multi-bahasa
     "lang",
     # rename / pindah

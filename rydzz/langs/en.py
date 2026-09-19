@@ -69,6 +69,8 @@ STRINGS = {
 • serve [port] [folder]     - HTTP server for sharing files
 • pick [query]              - Interactive fuzzy file finder
 • task                      - Named snippets (task save <name> "<cmd>")
+• ff <keyword>              - Fuzzy-find files/folders (-a hidden, --max N)
+• port [<no>|list|kill]     - See who listens on a port; port kill <number>
 • keystore <name> <alias>   - Create a Java keystore (.jks)
 • deploy vercel [path] [--prod] - Deploy your project to Vercel (default: active folder)
 
@@ -281,6 +283,10 @@ STRINGS = {
     "deactivate.done": "Virtual environment deactivated.",
     "alias.title": "Aliases:",
     "alias.empty": "No aliases found.",
+    "alias.doctor_title": "Alias Doctor — {total} aliases ({rydzz} rydzz, {bashrc} bashrc)",
+    "alias.doctor_sehat": "✓ Healthy aliases: {n}",
+    "alias.doctor_bad": "⚠ Potentially harmful aliases (may recurse forever): {n}",
+    "alias.doctor_loop": "→ first word '{name}' is still an alias (never reaches a real command)",
 
     # ---------- check update ----------
     "checkupdate.failed": "Failed to check for updates (need internet): {e}",
@@ -362,6 +368,22 @@ STRINGS = {
     "ls.capture_noaccess": "ls: cannot access '{target}'",
     "tree.not_dir": "tree: '{target}' is not a directory.",
     "tree.items_hidden": "{prefix}{n} items hidden...",
+
+    # ---------- ff fuzzy find / port manager ----------
+    "ff.usage": "Usage: ff <keyword> [-a] [path] [--max N]   - fuzzy-find files/folders",
+    "ff.notdir": "ff: '{target}' is not a directory.",
+    "ff.no_result": "No matches for '{query}'.",
+    "ff.summary": "{shown}/{total} matches (limit {limit})",
+    "port.usage": "Usage: port | port list | port <number> | port kill <number>",
+    "port.free": "Nothing is listening on port {port}.",
+    "port.no_tool": "No port tool (ss/lsof/fuser) available.",
+    "port.title": "Port {port}:",
+    "port.hint": "Kill it with: {kill}",
+    "port.no_pid": "No PID available for port {port}.",
+    "port.confirm": "Kill PID {pid} ({proc})? [y/N] ",
+    "port.killed": "Killed PID {pid} ({proc}).",
+    "port.cancelled": "Aborted.",
+    "port.list_title": "Listening TCP ports:",
 
     # ---------- git shortcut ----------
     "git.gc_usage": "Usage: gc <commit_message>",
@@ -537,7 +559,7 @@ AI_OVERVIEW = """RYDZZ SHELL FEATURES:
 - Media download: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <text> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
 - Web clone: wclone <url> (alias wcode) -> zip html/css/js/images/fonts
-- Utilities: clear, history, echo, whoami, sudo edit, sudo newpass, source, lang
+- Utilities: clear, history, echo, whoami, sudo edit, sudo newpass, source, deactivate, lang
 - Pipeline: cmd1 | cmd2 , chaining && , redirect > or >>"""
 
 # Offline AI topics (keyword -> explanation)

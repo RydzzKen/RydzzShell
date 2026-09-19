@@ -5,7 +5,10 @@ Built as a learning project and a daily driver: file navigation, git
 management, media downloads, QR codes, ASCII conversion, and command
 pipelining — all from one colorful terminal.
 
-> Version: **2.9.0** — CST (Cyber Security Test),
+> Version: **2.9.2** — recursive `ls` alias crash fix, new tools `ff`
+> (fuzzy file finder), `port list/kill` (port manager), `alias doctor`,
+> plus merged 2.9.1: `source <file>` for any script (venv activation),
+> `deactivate`, `(venv)` indicator in the prompt, CST (Cyber Security Test),
 > `keystore` (Java .jks), `wcode` alias for `wclone`, `rydza` alias for `ai`,
 > multi-language (English/Indonesian), persistent history,
 > pipes into builtins (incl. `| tee`) and **real-time streaming** for pure
@@ -13,7 +16,7 @@ pipelining — all from one colorful terminal.
 > daily kits (`trash`, `backup`, `hash`, `freq`, `clip`, `todo`, `serve`,
 > `pick`), named `task` snippets, `rfr`/`resetfolder` reset, and unit tests (pytest).
 
-![Version](https://img.shields.io/badge/Version-v2.9.0-2ea44f)
+![Version](https://img.shields.io/badge/Version-v2.9.2-2ea44f)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Dependency](https://img.shields.io/badge/Core-Zero%20dependency-6f42c1)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%E2%80%A2%20Termux%20%E2%80%A2%20macOS%20%E2%80%A2%20Windows-brightgreen)

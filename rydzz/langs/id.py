@@ -69,6 +69,8 @@ STRINGS = {
 • serve [port] [folder]     - HTTP server buat kirim file
 • pick [query]              - Cari file interaktif (fuzzy)
 • task                      - Snippet perintah bernama (task save <nama> "<cmd>")
+• ff <kata>                 - Cari file/folder secara fuzzy (-a hidden, --max N)
+• port [<no>|list|kill]     - Lihat siapa yang dengerin port; port kill <nomor>
 • keystore <nama> <alias> - Buat Java keystore (.jks)
 • deploy vercel [path] [--prod] - Deploy project ke Vercel (default: folder aktif)
 
@@ -281,6 +283,10 @@ STRINGS = {
     "deactivate.done": "Virtual environment dinonaktifkan.",
     "alias.title": "Daftar Alias:",
     "alias.empty": "Tidak ada alias ditemukan.",
+    "alias.doctor_title": "Alias Doctor — {total} alias ({rydzz} rydzz, {bashrc} bashrc)",
+    "alias.doctor_sehat": "✓ Alias sehat: {n}",
+    "alias.doctor_bad": "⚠ Alias berpotensi bermasalah (bisa rekursi tak hingga): {n}",
+    "alias.doctor_loop": "→ kata pertama '{name}' masih alias (tidak pernah sampai perintah nyata)",
 
     # ---------- cek update ----------
     "checkupdate.failed": "Gagal mengecek update (butuh internet): {e}",
@@ -362,6 +368,22 @@ STRINGS = {
     "ls.capture_noaccess": "ls: tidak dapat mengakses '{target}'",
     "tree.not_dir": "tree: '{target}' bukan direktori.",
     "tree.items_hidden": "{prefix}{n} item tersembunyi...",
+
+    # ---------- ff fuzzy find / port manager ----------
+    "ff.usage": "Pemakaian: ff <kata> [-a] [path] [--max N]   - cari file/folder secara fuzzy",
+    "ff.notdir": "ff: '{target}' bukan folder.",
+    "ff.no_result": "Tidak ada hasil untuk '{query}'.",
+    "ff.summary": "{shown}/{total} hasil (batas {limit})",
+    "port.usage": "Pemakaian: port | port list | port <nomor> | port kill <nomor>",
+    "port.free": "Tidak ada yang mendengarkan di port {port}.",
+    "port.no_tool": "Tidak ada tool port (ss/lsof/fuser) tersedia.",
+    "port.title": "Port {port}:",
+    "port.hint": "Matikan dengan: {kill}",
+    "port.no_pid": "Tidak ada PID untuk port {port}.",
+    "port.confirm": "Mematikan PID {pid} ({proc})? [y/N] ",
+    "port.killed": "PID {pid} ({proc}) dimatikan.",
+    "port.cancelled": "Dibatalkan.",
+    "port.list_title": "Port TCP yang sedang listening:",
 
     # ---------- git shortcut ----------
     "git.gc_usage": "Guna: gc <pesan_commit>",
@@ -537,7 +559,7 @@ AI_OVERVIEW = """FEATUR RYDZZ SHELL:
 - Unduh media: dl <url> [-q audio] | dl list | dl update (yt-dlp, Spotify via spotdl)
 - QR: qr <teks> [-o file.png|svg]  |  ASCII: ascii enc|dec [-x|-b]
 - Klone web: wclone <url> (alias wcode) -> zip html/css/js/gambar/font
-- Utilitas: clear, history, echo, whoami, sudo edit, sudo newpass, source, lang
+- Utilitas: clear, history, echo, whoami, sudo edit, sudo newpass, source, deactivate, lang
 - Pipeline: cmd1 | cmd2 , chaining && , redirect > atau >>"""
 
 # Topik offline AI (kata -> penjelasan)

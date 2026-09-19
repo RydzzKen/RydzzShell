@@ -768,8 +768,11 @@ def _run_builtin_capture(seg):
     return buf.getvalue()
 
 
-def handle_command(single_command):
+def handle_command(single_command, _alias_seen=None):
     """Menangani satu perintah (setelah dipisah dari &&/|)."""
+
+    if _alias_seen is None:
+        _alias_seen = set()
 
     # --- PIPE SUPPORT ---
     if pipe.has_pipe(single_command) and len(pipe.split_pipes(single_command)) > 1:
@@ -826,21 +829,26 @@ def handle_command(single_command):
 
     # --- CEK RYDZZ ALIAS DARI .rydzzrc ---
     rydzz_alias = config.CONFIG.get("rydzz_aliases", {}).get(cmd)
-    if rydzz_alias:
+    if rydzz_alias and cmd not in _alias_seen:
+        seen = set(_alias_seen)
+        seen.add(cmd)
         alias_cmd = f"{rydzz_alias} {arg}".strip()
-        handle_command(alias_cmd)
+        handle_command(alias_cmd, seen)
         return
 
     # --- CEK ALIAS DARI ~/.bashrc ---
     bashrc_alias = config.USER_ALIASES.get(cmd)
-    if bashrc_alias:
+    if bashrc_alias and cmd not in _alias_seen:
+        seen = set(_alias_seen)
+        seen.add(cmd)
         alias_cmd = f"{bashrc_alias} {arg}".strip()
-        handle_command(alias_cmd)
+        handle_command(alias_cmd, seen)
         return
 
     # --- TAMPILAN LS KHUSUS ---
     if cmd in ["ls", "dir"]:
         handle_custom_ls(arg)
+        return
 
     elif cmd == "pwd":
         print(os.getcwd())
@@ -1148,7 +1156,8 @@ def handle_command(single_command):
                             if "=" in line:
                                 key, _, value = line.partition("=")
                                 os.environ[key] = value
-                        print(t("source.ok_generic", file=expanded_arg))
+                        ok_msg = t("source.ok_generic", file=expanded_arg)
+                        print(ok_msg)
                     else:
                         print(t("source.failed"))
                 except Exception:
@@ -1170,15 +1179,19 @@ def handle_command(single_command):
         handle_sudo(single_command)
 
     elif cmd in ["alias", "aliases"]:
-        merged = {}
-        merged.update(config.CONFIG.get("rydzz_aliases", {}))
-        merged.update(config.USER_ALIASES)
-        if merged:
-            print(t("alias.title"))
-            for k, v in merged.items():
-                print(f"  {k} -> '{v}'")
+        if arg.strip().lower().startswith("doctor"):
+            for line in commands.alias_doctor():
+                print(line)
         else:
-            print(t("alias.empty"))
+            merged = {}
+            merged.update(config.CONFIG.get("rydzz_aliases", {}))
+            merged.update(config.USER_ALIASES)
+            if merged:
+                print(t("alias.title"))
+                for k, v in merged.items():
+                    print(f"  {k} -> '{v}'")
+            else:
+                print(t("alias.empty"))
 
     elif cmd in ["list", "help", "?"]:
         show_help()
@@ -1236,6 +1249,12 @@ def handle_command(single_command):
 
     elif cmd == "freq":
         kits.freq(arg)
+
+    elif cmd == "ff":
+        commands.fuzzy_find(*arg.split())
+
+    elif cmd == "port":
+        commands.port_handler(arg)
 
     elif cmd == "clip":
         kits.clip(arg)
